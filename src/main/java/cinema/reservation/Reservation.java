@@ -11,7 +11,7 @@ import cinema.referentiel.status.Status;
 public class Reservation extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_personne")
+    @JoinColumn(name = "id_personne", nullable = true)
     private Client personne;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -54,9 +54,7 @@ public class Reservation extends BaseEntity {
 
     // Setters avec règles de gestion
     public void setPersonne(Client personne) {
-        if (personne == null) {
-            throw new IllegalArgumentException("La personne (client) ne peut pas être null");
-        }
+        // Personne peut être null (réservation anonyme)
         this.personne = personne;
     }
 
@@ -83,7 +81,8 @@ public class Reservation extends BaseEntity {
 
     // Méthodes métier
     public boolean estValide() {
-        return personne != null && seance != null && status != null
+        // Personne est optionnelle (réservation anonyme)
+        return seance != null && status != null
             && montantTotal != null && montantTotal >= 0;
     }
 }

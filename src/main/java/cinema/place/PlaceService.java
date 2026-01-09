@@ -7,6 +7,7 @@ import cinema.salle.Salle;
 import cinema.salle.SalleRepository;
 import cinema.referentiel.typeplace.TypePlace;
 import cinema.referentiel.typeplace.TypePlaceRepository;
+import cinema.ticket.TicketRepository;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -21,6 +22,7 @@ public class PlaceService {
     private final PlaceRepository placeRepository;
     private final SalleRepository salleRepository;
     private final TypePlaceRepository typePlaceRepository;
+    private final TicketRepository ticketRepository;
 
     public Place creerPlace(Place place) {
         if (!place.estValide()) {
@@ -169,5 +171,64 @@ public class PlaceService {
 
     public boolean estValide(Place place) {
         return place != null && place.estValide();
+    }
+
+    // 🆕 MÉTHODES POUR LE FLUX ACHAT CLIENT
+
+    /**
+     * Obtenir les places disponibles pour une séance
+     * Exclut les places déjà réservées
+     */
+    @Transactional(readOnly = true)
+    public List<Place> obtenirPlacesDisponiblesBySeance(Long seanceId, Long salleId) {
+        List<Place> toutesLesPlaces = placeRepository.findBySalleId(salleId);
+        List<Long> placesReservees = ticketRepository.findPlacesReserveesBySeanceId(seanceId);
+        
+        return toutesLesPlaces.stream()
+            .filter(place -> !placesReservees.contains(place.getId()))
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Obtenir les places réservées pour une séance
+     */
+    @Transactional(readOnly = true)
+    public List<Place> obtenirPlacesReserveesBySeance(Long seanceId, Long salleId) {
+        List<Place> toutesLesPlaces = placeRepository.findBySalleId(salleId);
+        List<Long> placesReservees = ticketRepository.findPlacesReserveesBySeanceId(seanceId);
+        
+        return toutesLesPlaces.stream()
+            .filter(place -> placesReservees.contains(place.getId()))
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Vérifier si une place est disponible pour une séance
+     */
+    @Transactional(readOnly = true)
+    public boolean isPlaceDisponibleForSeance(Long seanceId, Long placeId) {
+        return !ticketRepository.isPlaceReservee(seanceId, placeId);
+    }
+
+    /**
+     * Obtenir le nombre de places disponibles pour une séance
+     */
+    @Transactional(readOnly = true)
+    public Integer obtenirNombrePlacesDisponibles(Long seanceId, Long salleId) {
+        long totalPlaces = placeRepository.countBySalleId(salleId);
+        List<Long> placesReservees = ticketRepository.findPlacesReserveesBySeanceId(seanceId);
+        return (int) (totalPlaces - placesReservees.size());
+    }
+
+    /**
+     * Obtenir le taux d'occupation d'une séance (en %)
+     */
+    @Transactional(readOnly = true)
+    public Double obtenirTauxOccupation(Long seanceId, Long salleId) {
+        long totalPlaces = placeRepository.countBySalleId(salleId);
+        if (totalPlaces == 0) return 0.0;
+        
+        List<Long> placesReservees = ticketRepository.findPlacesReserveesBySeanceId(seanceId);
+        return (double) (placesReservees.size() * 100) / totalPlaces;
     }
 }

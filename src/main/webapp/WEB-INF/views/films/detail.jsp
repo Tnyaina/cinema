@@ -110,28 +110,56 @@
                 <div class="seances-list">
                     <c:forEach var="seance" items="${seances}">
                         <div class="seance-card">
-                            <div class="seance-info">
-                                <p class="seance-date">
-                                    <i class="fas fa-calendar-day"></i>
-                                    ${seance.dateSeanceFormatted}
-                                </p>
-                                <p class="seance-hour">
-                                    <i class="fas fa-clock"></i>
-                                    ${seance.heureDebutFormatted}
-                                </p>
-                                <p class="seance-salle">
-                                    <i class="fas fa-door-open"></i>
-                                    ${seance.salle.nom}
-                                </p>
+                            <div class="seance-header">
+                                <div class="seance-date-time">
+                                    <p class="seance-date">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <strong>${seance.dateSeanceFormatted}</strong>
+                                    </p>
+                                    <p class="seance-hour">
+                                        <i class="fas fa-clock"></i>
+                                        <strong>${seance.heureDebutFormatted}</strong>
+                                        <c:if test="${not empty seance.fin}">
+                                            - ${seance.heureFin}
+                                        </c:if>
+                                    </p>
+                                </div>
+                                <div class="seance-room">
+                                    <p class="seance-salle">
+                                        <i class="fas fa-door-open"></i>
+                                        <strong>${seance.salle.nom}</strong>
+                                    </p>
+                                    <c:if test="${not empty seance.versionLangue}">
+                                        <p class="seance-version">
+                                            <i class="fas fa-closed-captioning"></i>
+                                            ${seance.versionLangue.libelle}
+                                        </p>
+                                    </c:if>
+                                </div>
                             </div>
-                            <div class="seance-places">
-                                <span class="places-available">
-                                    ${seance.placesDisponibles} places disponibles
-                                </span>
+                            <div class="seance-footer">
+                                <div class="seance-places">
+                                    <c:choose>
+                                        <c:when test="${seance.placesDisponibles > 0}">
+                                            <span class="badge badge-success">
+                                                <i class="fas fa-chair"></i>
+                                                ${seance.placesDisponibles} place<c:if test="${seance.placesDisponibles > 1}">s</c:if> disponible<c:if test="${seance.placesDisponibles > 1}">s</c:if>
+                                            </span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="badge badge-danger">
+                                                <i class="fas fa-ban"></i>
+                                                Complet
+                                            </span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
+                                <c:if test="${seance.placesDisponibles > 0}">
+                                    <a href="<c:url value='/seances/${seance.id}'/>" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-eye"></i> Voir les places
+                                    </a>
+                                </c:if>
                             </div>
-                            <a href="<c:url value='/reservations/nouvelle?seanceId=${seance.id}'/>" class="btn btn-primary btn-sm">
-                                Réserver
-                            </a>
                         </div>
                     </c:forEach>
                 </div>
@@ -316,8 +344,8 @@
 
     .seances-list {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 18px;
     }
 
     .seance-card {
@@ -326,6 +354,9 @@
         border-radius: 12px;
         padding: 20px;
         transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
     }
 
     .seance-card:hover {
@@ -334,34 +365,99 @@
         transform: translateY(-2px);
     }
 
-    .seance-info p {
-        margin: 12px 0;
+    .seance-header {
+        flex-grow: 1;
+        margin-bottom: 15px;
+    }
+
+    .seance-date-time,
+    .seance-room {
+        margin-bottom: 12px;
+    }
+
+    .seance-date-time p,
+    .seance-room p {
+        margin: 8px 0;
         color: #1e293b;
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
+        font-size: 0.95rem;
+    }
+
+    .seance-date-time i,
+    .seance-room i {
+        color: #003d7a;
+        width: 18px;
+        text-align: center;
+        font-size: 1.05rem;
+        flex-shrink: 0;
+    }
+
+    .seance-date {
+        font-weight: 700;
+        color: #003d7a;
+        font-size: 1rem;
+    }
+
+    .seance-hour {
+        font-weight: 600;
+        color: #0f172a;
+    }
+
+    .seance-salle {
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .seance-version {
+        font-size: 0.9rem;
+        color: #64748b;
         font-weight: 500;
     }
 
-    .seance-info i {
-        color: #3b82f6;
-        width: 20px;
-        text-align: center;
-        font-size: 1.1rem;
+    .seance-footer {
+        border-top: 1px solid #e2e8f0;
+        padding-top: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
     }
 
     .seance-places {
-        background: #eff6ff;
-        border-radius: 8px;
-        padding: 12px;
-        margin: 18px 0;
-        text-align: center;
+        display: flex;
+        align-items: center;
     }
 
-    .places-available {
-        color: #1e40af;
-        font-weight: 700;
-        font-size: 1rem;
+    .seance-places .badge {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+    }
+
+    .badge-success {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .badge-danger {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .btn-primary.btn-sm {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        border-radius: 6px;
+        white-space: nowrap;
+        flex-shrink: 0;
     }
 
     /* Modal styles - CACHÉ PAR DÉFAUT */

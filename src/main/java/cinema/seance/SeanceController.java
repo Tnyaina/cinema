@@ -4,7 +4,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import cinema.place.Place;
+import cinema.place.PlaceService;
+import cinema.tarif.TarifSeance;
+import cinema.tarif.TarifSeanceRepository;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
 
 @Controller
 @RequestMapping("/seances")
@@ -12,6 +19,8 @@ import java.util.List;
 public class SeanceController {
 
     private final SeanceService seanceService;
+    private final PlaceService placeService;
+    private final TarifSeanceRepository tarifSeanceRepository;
 
     @GetMapping
     public String listerSeances(
@@ -41,9 +50,50 @@ public class SeanceController {
     @GetMapping("/{id}")
     public String afficherDetail(@PathVariable Long id, Model model) {
         Seance seance = seanceService.obtenirSeanceById(id);
+        
+        // Obtenir les places de la salle
+        Long salleId = seance.getSalle().getId();
+        List<Place> toutesLesPlaces = placeService.obtenirPlacesParSalle(salleId);
+        
+        // Obtenir les places disponibles pour cette séance
+        List<Place> placesDisponibles = placeService.obtenirPlacesDisponiblesBySeance(id, salleId);
+        List<Place> placesReservees = placeService.obtenirPlacesReserveesBySeance(id, salleId);
+        
+        // Grouper les places par rangée pour affichage
+        Map<String, List<Place>> placesParRangee = placeService.obtenirPlacesGroupeesParRangee(salleId);
+        
+        // Obtenir les tarifs pour cette séance
+        List<TarifSeance> tarifs = tarifSeanceRepository.findBySeanceId(id);
+        Map<Long, Double> prixParTypePlace = new HashMap<>();
+        for (TarifSeance tarif : tarifs) {
+            prixParTypePlace.put(tarif.getTypePlace().getId(), tarif.getPrix());
+        }
+        
+        // Grouper les places par type de place
+        Map<String, List<Place>> placesParType = new HashMap<>();
+        for (Place place : toutesLesPlaces) {
+            String typeLabel = place.getTypePlace() != null ? place.getTypePlace().getLibelle() : "Standard";
+            placesParType.computeIfAbsent(typeLabel, k -> new ArrayList<>()).add(place);
+        }
+        
+        // Calculer les informations
+        Integer placesDispoCount = placeService.obtenirNombrePlacesDisponibles(id, salleId);
+        Integer placesReserveeCount = toutesLesPlaces.size() - placesDispoCount;
+        Double tauxOccupation = placeService.obtenirTauxOccupation(id, salleId);
+        
         model.addAttribute("seance", seance);
+        model.addAttribute("placesParRangee", placesParRangee);
+        model.addAttribute("placesParType", placesParType);
+        model.addAttribute("prixParTypePlace", prixParTypePlace);
+        model.addAttribute("placesReservees", placesReservees);
+        model.addAttribute("placesDisponibles", placesDisponibles);
+        model.addAttribute("placesDispoCount", placesDispoCount);
+        model.addAttribute("placesReserveeCount", placesReserveeCount);
+        model.addAttribute("tauxOccupation", String.format("%.0f", tauxOccupation));
+        model.addAttribute("totalPlaces", toutesLesPlaces.size());
+        model.addAttribute("tarifs", tarifs);
         model.addAttribute("page", "seances/detail");
-        model.addAttribute("pageTitle", "Séance - " + seance.getFilm().getTitre());
+        model.addAttribute("pageTitle", "Réserver - " + seance.getFilm().getTitre());
         model.addAttribute("pageActive", "seances");
         return "layout";
     }

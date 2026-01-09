@@ -58,5 +58,23 @@ public class ClientService {
     public List<Client> rechercherParEmail(String email) {
         return clientRepository.findByEmailContainingIgnoreCase(email);
     }
+
+    /**
+     * Obtient ou crée un client basé sur les informations fournies
+     * Cherche d'abord par email, puis crée s'il n'existe pas
+     */
+    public Client obtenirOuCreerClient(String nomComplet, String email, String telephone) {
+        // Chercher par email en priorité
+        if (email != null && !email.trim().isEmpty()) {
+            var clientExistant = clientRepository.findByEmail(email.trim());
+            if (clientExistant.isPresent()) {
+                return clientExistant.get();
+            }
+        }
+
+        // Créer un nouveau client
+        Client nouveauClient = new Client(nomComplet, email, telephone);
+        return creerClient(nouveauClient);
+    }
 }
 

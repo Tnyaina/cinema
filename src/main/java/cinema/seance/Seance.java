@@ -38,6 +38,10 @@ public class Seance extends BaseEntity {
     @Column
     private String statut = "Disponible";
 
+    // Champ transient pour stocker le nombre de places disponibles calculé
+    @Transient
+    private Integer placesDisponiblesCalculees;
+
     // Constructeurs
     public Seance() {
     }
@@ -95,7 +99,11 @@ public class Seance extends BaseEntity {
     }
 
     public Integer getPlacesDisponibles() {
-        // À implémenter selon la logique métier (capacité - réservations)
+        // Retourner d'abord la valeur calculée si elle existe
+        if (placesDisponiblesCalculees != null) {
+            return placesDisponiblesCalculees;
+        }
+        // Sinon, retourner la capacité de la salle par défaut
         if (salle != null) {
             return salle.getCapacite();
         }
@@ -134,6 +142,10 @@ public class Seance extends BaseEntity {
 
     public void setStatut(String statut) {
         this.statut = statut;
+    }
+
+    public void setPlacesDisponiblesCalculees(Integer placesDisponiblesCalculees) {
+        this.placesDisponiblesCalculees = placesDisponiblesCalculees;
     }
 
     // Méthodes métier

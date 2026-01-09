@@ -8,7 +8,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import cinema.seance.Seance;
+import cinema.seance.SeanceService;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/films")
@@ -16,6 +19,7 @@ import java.util.List;
 public class FilmController {
 
     private final FilmService filmService;
+    private final SeanceService seanceService;
 
     @GetMapping
     public String listerFilms(
@@ -59,7 +63,12 @@ public class FilmController {
     @GetMapping("/{id}")
     public String afficherDetail(@PathVariable Long id, Model model) {
         Film film = filmService.obtenirFilmById(id);
+        
+        // Obtenir toutes les séances pour ce film et filtrer les disponibles
+        List<Seance> seancesDisponibles = seanceService.obtenirSeancesDisponiblesParFilm(id);
+        
         model.addAttribute("film", film);
+        model.addAttribute("seances", seancesDisponibles);
         model.addAttribute("page", "films/detail");
         model.addAttribute("pageTitle", film.getTitre());
         model.addAttribute("pageActive", "films");

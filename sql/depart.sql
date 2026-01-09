@@ -221,7 +221,9 @@ INSERT INTO status (code, libelle, valeur, est_final) VALUES
 ('PAYE','Paye',21,false),
 ('CONFIRMEE','Confirmee',31,false),
 ('ANNULEE','Annulee',100,true),
-('EXPIREE','Expiree',101,true);
+('EXPIREE','Expiree',101,true),
+('DISPONIBLE','Disponible',2,false),
+('RESERVEE','Reservee',12,false);
 
 INSERT INTO categorie_personne (libelle) VALUES
 ('ADULTE'),('ENFANT'),('SENIOR');
