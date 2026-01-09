@@ -28,8 +28,8 @@ public class Seance extends BaseEntity {
     private LocalDateTime debut;
 
     @Column
-    @DateTimeFormat(pattern = "HH:mm")
-    private LocalTime fin;
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+    private LocalDateTime fin;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_version_langue")
@@ -61,7 +61,7 @@ public class Seance extends BaseEntity {
         return debut;
     }
 
-    public LocalTime getFin() {
+    public LocalDateTime getFin() {
         return fin;
     }
 
@@ -124,7 +124,7 @@ public class Seance extends BaseEntity {
         this.debut = debut;
     }
 
-    public void setFin(LocalTime fin) {
+    public void setFin(LocalDateTime fin) {
         this.fin = fin;
     }
 

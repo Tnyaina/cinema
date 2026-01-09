@@ -3,6 +3,7 @@
 
 <div class="content-header">
     <h1><c:if test="${empty seance.id}">Créer une nouvelle séance</c:if><c:if test="${not empty seance.id}">Modifier la séance</c:if></h1>
+    <p class="subtitle">Gérez les diffusions de vos films dans différentes salles et horaires</p>
 </div>
 
 <div class="form-container">
@@ -10,6 +11,7 @@
         <div class="form-section">
             <div class="section-title">
                 <h3>Informations de base</h3>
+                <p class="section-hint">Sélectionnez un film et une salle (un film peut être diffusé dans plusieurs salles en parallèle)</p>
             </div>
 
             <div class="form-row">
@@ -18,11 +20,12 @@
                     <select id="filmSelect" name="filmId" class="form-control" required>
                         <option value="">-- Sélectionner un film --</option>
                         <c:forEach var="film" items="${films}">
-                            <option value="${film.id}" <c:if test="${seance.film.id == film.id}">selected</c:if>>
-                                ${film.titre}
+                            <option value="${film.id}" data-duration="${film.dureeMinutes}" <c:if test="${seance.film.id == film.id}">selected</c:if>>
+                                ${film.titre} (${film.dureeMinutes} min)
                             </option>
                         </c:forEach>
                     </select>
+                    <small class="form-text text-muted">La durée du film sera utilisée pour calculer l'heure de fin automatiquement</small>
                 </div>
 
                 <div class="form-field">
@@ -30,11 +33,12 @@
                     <select id="salleSelect" name="salleId" class="form-control" required>
                         <option value="">-- Sélectionner une salle --</option>
                         <c:forEach var="salle" items="${salles}">
-                            <option value="${salle.id}" <c:if test="${seance.salle.id == salle.id}">selected</c:if>>
-                                ${salle.nom} (${salle.capacite} places)
+                            <option value="${salle.id}" data-capacite="${salle.capacite}" <c:if test="${seance.salle.id == salle.id}">selected</c:if>>
+                                ${salle.nom} - ${salle.capacite} places
                             </option>
                         </c:forEach>
                     </select>
+                    <small class="form-text text-muted">Règle: Un film peut être diffusé parallèlement dans plusieurs salles</small>
                 </div>
             </div>
         </div>
@@ -42,6 +46,7 @@
         <div class="form-section">
             <div class="section-title">
                 <h3>Date et heure</h3>
+                <p class="section-hint">Un film peut être diffusé plusieurs fois par jour et sur plusieurs jours</p>
             </div>
 
             <div class="form-row">
@@ -49,15 +54,24 @@
                     <label for="debut">Date et heure de début <span class="required">*</span></label>
                     <input type="datetime-local" id="debut" name="debut" class="form-control" 
                            value="${not empty seance.debut ? seance.debut : ''}" required>
-                    <small class="form-text text-muted">Format: YYYY-MM-DD HH:mm</small>
+                    <small class="form-text text-muted">Format: JJ/MM/YYYY HH:mm</small>
+                    <div id="conflictWarning" class="warning" style="display:none;">
+                        ⚠️ Attention: Un chevauchement est détecté dans cette salle à cette heure
+                    </div>
                 </div>
 
                 <div class="form-field">
-                    <label for="fin">Heure de fin</label>
-                    <input type="time" id="fin" name="fin" class="form-control" 
-                           value="${not empty seance.fin ? seance.fin : ''}">
-                    <small class="form-text text-muted">Optionnel (calculé automatiquement si vide)</small>
+                    <label for="fin">Date et heure de fin <span class="required">*</span></label>
+                    <input type="datetime-local" id="fin" name="fin" class="form-control" 
+                           value="${not empty seance.fin ? seance.fin : ''}" required>
+                    <small class="form-text text-muted">Calculé automatiquement d'après la durée du film</small>
                 </div>
+            </div>
+
+            <!-- Affichage des séances existantes -->
+            <div id="seancesExistantes" class="seances-list" style="display:none;">
+                <h4>📺 Séances existantes dans cette salle</h4>
+                <div id="seancesContent"></div>
             </div>
         </div>
 
@@ -107,6 +121,13 @@
         font-weight: 600;
     }
 
+    .content-header .subtitle {
+        margin: 10px 0 0 0;
+        font-size: 14px;
+        color: #666;
+        font-weight: 400;
+    }
+
     .form-container {
         background: white;
         border: 1px solid #e0e0e0;
@@ -136,6 +157,16 @@
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+    }
+
+    .section-hint {
+        margin: 0;
+        font-size: 13px;
+        color: #666;
+        font-weight: 400;
+        font-style: italic;
+        margin-top: -15px;
+        margin-bottom: 15px;
     }
 
     .form-row {
@@ -267,24 +298,211 @@
             justify-content: center;
         }
     }
+
+    /* Styles pour validations et affichage des séances */
+    .warning {
+        background-color: #fff3cd;
+        color: #856404;
+        padding: 12px 15px;
+        border-left: 4px solid #ffc107;
+        border-radius: 4px;
+        margin-top: 8px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .success {
+        background-color: #d4edda;
+        color: #155724;
+        padding: 12px 15px;
+        border-left: 4px solid #28a745;
+        border-radius: 4px;
+        margin-top: 8px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .seances-list {
+        margin-top: 25px;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-left: 4px solid #003d7a;
+        border-radius: 4px;
+    }
+
+    .seances-list h4 {
+        margin: 0 0 15px 0;
+        color: #003d7a;
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .seance-item {
+        background: white;
+        padding: 12px 15px;
+        margin-bottom: 10px;
+        border-left: 3px solid #003d7a;
+        border-radius: 3px;
+        font-size: 13px;
+    }
+
+    .seance-item.conflict {
+        background: #ffe0e0;
+        border-left-color: #dc3545;
+    }
+
+    .seance-item .film-name {
+        font-weight: 600;
+        color: #003d7a;
+    }
+
+    .seance-item .timing {
+        color: #666;
+        margin-top: 3px;
+    }
 </style>
 
 <script>
+    // Données des films et séances existantes
+    const filmsData = {};
+    const seancesParSalle = {};
+    
+    <c:forEach var="film" items="${films}">
+        filmsData[${film.id}] = {
+            titre: '${film.titre}',
+            dureeMinutes: ${film.dureeMinutes}
+        };
+    </c:forEach>
+
+    <c:forEach var="seance" items="${seancesExistantes}">
+        if (!seancesParSalle[${seance.salle.id}]) {
+            seancesParSalle[${seance.salle.id}] = [];
+        }
+        seancesParSalle[${seance.salle.id}].push({
+            id: ${seance.id},
+            filmTitre: '${seance.film.titre}',
+            debut: new Date('${seance.debut}'),
+            fin: new Date('${seance.fin}'),
+            dureeMinutes: ${seance.film.dureeMinutes}
+        });
+    </c:forEach>
+
     document.addEventListener('DOMContentLoaded', function() {
         const filmSelect = document.getElementById('filmSelect');
         const salleSelect = document.getElementById('salleSelect');
         const debutInput = document.getElementById('debut');
+        const finInput = document.getElementById('fin');
+        const conflictWarning = document.getElementById('conflictWarning');
+        const seancesExistantes = document.getElementById('seancesExistantes');
+        const seancesContent = document.getElementById('seancesContent');
 
-        // Auto-calculate fin time when debut is selected
+        // Fonction pour formater une date en format local lisible
+        function formatDate(date) {
+            if (!date) return '';
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${day}/${month}/${year} ${hours}:${minutes}`;
+        }
+
+        // Fonction pour convertir datetime-local en Date
+        function getDateFromInput(value) {
+            if (!value) return null;
+            return new Date(value);
+        }
+
+        // Fonction pour vérifier les chevauchements
+        function checkConflicts() {
+            if (!debutInput.value || !filmSelect.value || !salleSelect.value) return;
+
+            const debut = getDateFromInput(debutInput.value);
+            const duree = filmsData[filmSelect.value].dureeMinutes;
+            const fin = new Date(debut.getTime() + duree * 60 * 1000);
+            const salleId = parseInt(salleSelect.value);
+
+            let hasConflict = false;
+            let html = '';
+
+            // Afficher les séances existantes
+            if (seancesParSalle[salleId]) {
+                seancesParSalle[salleId].forEach(seance => {
+                    const seanceDebut = new Date(seance.debut);
+                    const seanceFin = new Date(seance.fin);
+                    
+                    // Vérifier chevauchement : si fin > seanceDebut ET debut < seanceFin
+                    const overlap = fin > seanceDebut && debut < seanceFin;
+
+                    const liClass = overlap ? 'seance-item conflict' : 'seance-item';
+                    html += `<div class="${liClass}">
+                        <div class="film-name">🎬 ${seance.filmTitre}</div>
+                        <div class="timing">${formatDate(seanceDebut)} → ${formatDate(seanceFin)}</div>
+                    </div>`;
+
+                    if (overlap) {
+                        hasConflict = true;
+                    }
+                });
+            } else {
+                html += '<div class="seance-item" style="color:#999;">Aucune séance existante dans cette salle</div>';
+            }
+
+            seancesContent.innerHTML = html;
+            seancesExistantes.style.display = 'block';
+            
+            if (hasConflict) {
+                conflictWarning.style.display = 'block';
+            } else {
+                conflictWarning.style.display = 'none';
+            }
+        }
+
+        // Recalculer fin quand début change
         debutInput.addEventListener('change', function() {
-            if (!this.value) return;
-            const debut = new Date(this.value);
-            // Assume standard movie duration (estimate from film selected)
-            // For now, set to 2 hours after debut
-            const fin = new Date(debut.getTime() + 2 * 60 * 60 * 1000);
-            const finTime = String(fin.getHours()).padStart(2, '0') + ':' + 
-                            String(fin.getMinutes()).padStart(2, '0');
-            document.getElementById('fin').value = finTime;
+            if (!this.value || !filmSelect.value) return;
+
+            const debut = getDateFromInput(this.value);
+            const duree = filmsData[filmSelect.value].dureeMinutes || 120;
+            const fin = new Date(debut.getTime() + duree * 60 * 1000);
+
+            // Convertir fin en format datetime-local
+            const year = fin.getFullYear();
+            const month = String(fin.getMonth() + 1).padStart(2, '0');
+            const day = String(fin.getDate()).padStart(2, '0');
+            const hours = String(fin.getHours()).padStart(2, '0');
+            const minutes = String(fin.getMinutes()).padStart(2, '0');
+
+            finInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+            checkConflicts();
         });
+
+        // Quand le film change, recalculer fin
+        filmSelect.addEventListener('change', function() {
+            if (debutInput.value && this.value) {
+                const debut = getDateFromInput(debutInput.value);
+                const duree = filmsData[this.value].dureeMinutes || 120;
+                const fin = new Date(debut.getTime() + duree * 60 * 1000);
+
+                const year = fin.getFullYear();
+                const month = String(fin.getMonth() + 1).padStart(2, '0');
+                const day = String(fin.getDate()).padStart(2, '0');
+                const hours = String(fin.getHours()).padStart(2, '0');
+                const minutes = String(fin.getMinutes()).padStart(2, '0');
+
+                finInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+            }
+            checkConflicts();
+        });
+
+        // Quand la salle change, vérifier les conflits
+        salleSelect.addEventListener('change', function() {
+            checkConflicts();
+        });
+
+        // Initialiser l'affichage au chargement
+        if (debutInput.value && filmSelect.value && salleSelect.value) {
+            checkConflicts();
+        }
     });
 </script>

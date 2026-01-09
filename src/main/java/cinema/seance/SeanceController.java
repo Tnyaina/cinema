@@ -54,6 +54,7 @@ public class SeanceController {
         model.addAttribute("films", seanceService.obtenirTousLesFilms());
         model.addAttribute("salles", seanceService.obtenirToutesLesSalles());
         model.addAttribute("versionLangues", seanceService.obtenirToutesLesVersionsLangue());
+        model.addAttribute("seancesExistantes", seanceService.obtenirToutesLesSeances());
         model.addAttribute("page", "seances/formulaire");
         model.addAttribute("pageTitle", "Ajouter une séance");
         model.addAttribute("pageActive", "seances");
@@ -88,6 +89,7 @@ public class SeanceController {
         model.addAttribute("films", seanceService.obtenirTousLesFilms());
         model.addAttribute("salles", seanceService.obtenirToutesLesSalles());
         model.addAttribute("versionLangues", seanceService.obtenirToutesLesVersionsLangue());
+        model.addAttribute("seancesExistantes", seanceService.obtenirToutesLesSeances());
         model.addAttribute("page", "seances/formulaire");
         model.addAttribute("pageTitle", "Modifier: " + seance.getFilm().getTitre());
         model.addAttribute("pageActive", "seances");
