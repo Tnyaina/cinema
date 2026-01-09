@@ -1,0 +1,741 @@
+/* SEANCE RESERVATION CONTAINER */
+.seance-reservation-container {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.content-header {
+    margin-bottom: 30px;
+}
+
+/* ALERTES */
+.alert {
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 500;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.alert-success {
+    background: #d1fae5;
+    color: #065f46;
+    border-left: 4px solid #10b981;
+}
+
+.alert-danger {
+    background: #fee2e2;
+    color: #991b1b;
+    border-left: 4px solid #ef4444;
+}
+
+.alert i {
+    font-size: 1.2rem;
+}
+
+.btn-close {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    margin-left: auto;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.btn-close:hover {
+    opacity: 1;
+}
+
+/* EN-TÊTE SÉANCE */
+.seance-header-info {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 30px;
+    margin-bottom: 40px;
+    padding-bottom: 30px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.film-info h1 {
+    font-size: 2rem;
+    margin: 0 0 15px 0;
+    color: #003d7a;
+    font-weight: 700;
+}
+
+.seance-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #1e293b;
+    font-weight: 500;
+}
+
+.detail-item i {
+    color: #003d7a;
+    font-size: 1.1rem;
+}
+
+/* STATISTIQUES */
+.occupation-stats {
+    display: flex;
+    gap: 20px;
+    justify-content: flex-end;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+/* TARIFS PAR TYPE - AMÉLIORÉ */
+.seance-place-types {
+    margin-bottom: 30px;
+    padding: 25px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    border: 2px solid #003d7a;
+    box-shadow: 0 2px 8px rgba(0, 61, 122, 0.1);
+}
+
+.seance-place-types h3 {
+    margin: 0 0 20px 0;
+    color: #003d7a;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.2rem;
+}
+
+.place-types-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+}
+
+.place-type-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.place-type-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #003d7a, #0055b0);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.place-type-card:hover {
+    border-color: #003d7a;
+    box-shadow: 0 4px 12px rgba(0, 61, 122, 0.2);
+    transform: translateY(-2px);
+}
+
+.place-type-card:hover::before {
+    transform: scaleX(1);
+}
+
+.type-icon {
+    font-size: 2rem;
+    color: #003d7a;
+    margin-bottom: 10px;
+}
+
+.type-name {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 1rem;
+    margin-bottom: 10px;
+}
+
+.type-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #10b981;
+}
+
+/* ÉCRAN */
+.seance-screen {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 20px;
+    background: linear-gradient(135deg, #003d7a 0%, #0055b0 100%);
+    border-radius: 8px;
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 61, 122, 0.3);
+}
+
+.screen-label {
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+/* PLAN DE SALLE AMÉLIORÉ */
+.seance-plan {
+    margin-bottom: 40px;
+}
+
+.plan-title {
+    margin: 0 0 20px 0;
+    color: #003d7a;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.plan-legend {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.legend-separator {
+    width: 2px;
+    height: 30px;
+    background: #cbd5e1;
+    margin: 0 10px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: #1e293b;
+    font-weight: 500;
+}
+
+.legend-type {
+    padding: 6px 12px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.legend-type:hover {
+    border-color: #003d7a;
+    box-shadow: 0 2px 6px rgba(0, 61, 122, 0.1);
+}
+
+.place-preview {
+    width: 30px;
+    height: 30px;
+    border-radius: 4px;
+    display: inline-block;
+    border: 2px solid;
+}
+
+.place-libre {
+    background: #d1fae5;
+    border-color: #10b981;
+}
+
+.place-reservee {
+    background: #fee2e2;
+    border-color: #ef4444;
+}
+
+.place-selectionnee {
+    background: #dbeafe;
+    border-color: #3b82f6;
+}
+
+/* Types de places - Couleurs distinctes */
+.place-type-VIP,
+.place-preview.place-type-VIP {
+    background: linear-gradient(135deg, #fef08a 0%, #facc15 100%);
+    border-color: #d97706;
+}
+
+.place-type-Premium,
+.place-preview.place-type-Premium {
+    background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%);
+    border-color: #8b5cf6;
+}
+
+.place-type-Handicapé,
+.place-preview.place-type-Handicapé {
+    background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+    border-color: #0369a1;
+}
+
+.place-type-Standard,
+.place-preview.place-type-Standard {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    border-color: #10b981;
+}
+
+/* PLACES GRID */
+.places-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 30px 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+}
+
+.rangee-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.rangee-label {
+    width: 50px;
+    text-align: center;
+    font-weight: 700;
+    color: #003d7a;
+    font-size: 1.1rem;
+    background: white;
+    padding: 8px;
+    border-radius: 6px;
+    border: 2px solid #003d7a;
+}
+
+.places-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    flex-grow: 1;
+}
+
+/* PLACES - VERSION AMÉLIORÉE */
+.place {
+    width: 55px;
+    height: 55px;
+    padding: 4px;
+    border: 2px solid;
+    border-radius: 6px;
+    color: #065f46;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.place-numero {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.place-type-label {
+    font-size: 0.65rem;
+    font-weight: 500;
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1;
+}
+
+.place:hover:not(:disabled) {
+    transform: scale(1.15);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    z-index: 10;
+}
+
+.place-reservee {
+    background: #fee2e2;
+    border-color: #ef4444;
+    color: #991b1b;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.place-label {
+    cursor: pointer;
+    margin: 0;
+}
+
+.place-checkbox {
+    display: none;
+}
+
+.place-checkbox:checked + .place {
+    background: #dbeafe !important;
+    border-color: #3b82f6 !important;
+    color: #1e40af !important;
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+    transform: scale(1.1);
+}
+
+/* RÉSUMÉ */
+.reservation-summary {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 30px;
+    padding: 25px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 2px solid #e2e8f0;
+}
+
+.summary-box h3 {
+    margin: 0 0 20px 0;
+    font-size: 1.2rem;
+    color: #003d7a;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.summary-details {
+    padding: 15px 0;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.summary-detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 0.9rem;
+}
+
+.summary-detail-item .label {
+    color: #64748b;
+    font-weight: 500;
+}
+
+.summary-detail-item .value {
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.summary-item.total {
+    border-bottom: none;
+    padding-top: 15px;
+    border-top: 2px solid #003d7a;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #003d7a;
+}
+
+.summary-item .label {
+    color: #64748b;
+    font-weight: 600;
+}
+
+.summary-item .value {
+    color: #1e293b;
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+
+.note-info {
+    margin-top: 15px;
+    padding: 12px;
+    background: #eff6ff;
+    border-left: 4px solid #3b82f6;
+    color: #1e40af;
+    font-size: 0.9rem;
+    border-radius: 4px;
+}
+
+.note-info i {
+    margin-right: 5px;
+}
+
+/* BOUTONS */
+.reservation-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-align: center;
+    justify-content: center;
+}
+
+.btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #003d7a 0%, #0055b0 100%);
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, #002d5a 0%, #003d7a 100%);
+}
+
+.btn-primary:disabled {
+    background: #cbd5e1;
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+}
+
+.btn-outline {
+    background: white;
+    color: #003d7a;
+    border: 2px solid #003d7a;
+}
+
+.btn-outline:hover {
+    background: #f8f9fa;
+}
+
+.btn-lg {
+    padding: 14px 28px;
+    font-size: 1.05rem;
+}
+
+.btn-sm {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+}
+
+/* MODAL */
+.modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #003d7a 0%, #0055b0 100%);
+    color: white;
+    border-bottom: none;
+    border-radius: 12px 12px 0 0;
+    padding: 20px 25px;
+}
+
+.modal-header .modal-title {
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-body {
+    padding: 25px;
+}
+
+.reservation-recap {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.reservation-recap h6 {
+    margin: 0 0 15px 0;
+    color: #003d7a;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.recap-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.recap-item:last-child {
+    border-bottom: none;
+    padding-top: 12px;
+    border-top: 2px solid #003d7a;
+    font-weight: 700;
+    color: #003d7a;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-group label i {
+    color: #003d7a;
+}
+
+.form-control {
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.form-control:focus {
+    border-color: #003d7a;
+    box-shadow: 0 0 0 3px rgba(0, 61, 122, 0.1);
+    outline: none;
+}
+
+.form-control::placeholder {
+    color: #cbd5e1;
+}
+
+.text-danger {
+    color: #ef4444;
+}
+
+.modal-footer {
+    border-top: 1px solid #e2e8f0;
+    padding: 15px 25px;
+}
+
+.alert-info {
+    background: #eff6ff;
+    border-left: 4px solid #3b82f6;
+    color: #1e40af;
+    margin-bottom: 0;
+    padding: 12px;
+    border-radius: 4px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .seance-header-info {
+        grid-template-columns: 1fr;
+    }
+
+    .occupation-stats {
+        justify-content: flex-start;
+        grid-column: 1;
+    }
+
+    .seance-details {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .plan-legend {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .legend-separator {
+        width: 100%;
+        height: 2px;
+    }
+
+    .rangee-row {
+        gap: 10px;
+    }
+
+    .reservation-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .place {
+        width: 45px;
+        height: 45px;
+        font-size: 0.7rem;
+    }
+
+    .place-numero {
+        font-size: 0.9rem;
+    }
+
+    .place-type-label {
+        font-size: 0.6rem;
+    }
+}

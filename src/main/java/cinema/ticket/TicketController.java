@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import cinema.seance.SeanceService;
 import cinema.place.PlaceService;
 import cinema.tarif.TarifSeanceRepository;
+import cinema.tarif.TarifDefautRepository;
 import cinema.referentiel.categoriepersonne.CategoriePersonneRepository;
 import cinema.shared.StatusRepository;
 import cinema.client.ClientService;
@@ -24,6 +25,7 @@ public class TicketController {
     private final SeanceService seanceService;
     private final PlaceService placeService;
     private final TarifSeanceRepository tarifSeanceRepository;
+    private final TarifDefautRepository tarifDefautRepository;
     private final CategoriePersonneRepository categoriePersonneRepository;
     private final StatusRepository statusRepository;
     private final ClientService clientService;
@@ -128,8 +130,21 @@ public class TicketController {
                 }
                 
                 // Obtenir le prix pour ce type de place
-                var tarifOptional = tarifSeanceRepository.findBySeanceIdAndTypePlaceId(seanceId, place.getTypePlace().getId());
-                Double prix = tarifOptional.map(t -> t.getPrix()).orElse(12.0); // Prix par défaut
+                // D'abord chercher dans les tarifs de séance
+                var tarifSeanceOptional = tarifSeanceRepository.findBySeanceIdAndTypePlaceId(seanceId, place.getTypePlace().getId());
+                
+                Double prix;
+                if (tarifSeanceOptional.isPresent()) {
+                    // Si un tarif de séance existe, l'utiliser
+                    prix = tarifSeanceOptional.get().getPrix();
+                } else {
+                    // Sinon, chercher dans les tarifs défaut
+                    var tarifDefautOptional = tarifDefautRepository.findByTypePlaceIdAndCategoriePersonneId(
+                        place.getTypePlace().getId(),
+                        categoriePersonne.getId()
+                    );
+                    prix = tarifDefautOptional.map(t -> t.getPrix()).orElse(12.0); // Prix par défaut
+                }
                 
                 // Créer le ticket avec la réservation déjà persistée
                 Ticket ticket = new Ticket();

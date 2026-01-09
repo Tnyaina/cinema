@@ -2,6 +2,8 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
 
+<link rel="stylesheet" href="<c:url value='/css/cinema-detail.css'/>">
+
 <!-- MESSAGES D'ALERTE ET DE SUCCÈS -->
 <c:if test="${not empty success}">
     <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -83,10 +85,26 @@
         <!-- TARIFS PAR TYPE DE PLACE -->
         <c:if test="${not empty tarifs}">
             <div class="seance-place-types">
-                <h3>Tarifs par type de place</h3>
+                <h3><i class="fas fa-tags"></i> Tarifs par type de place</h3>
                 <div class="place-types-grid">
                     <c:forEach var="tarif" items="${tarifs}">
-                        <div class="place-type-card">
+                        <div class="place-type-card" data-type="${tarif.typePlace.libelle}">
+                            <div class="type-icon">
+                                <c:choose>
+                                    <c:when test="${tarif.typePlace.libelle == 'VIP'}">
+                                        <i class="fas fa-star"></i>
+                                    </c:when>
+                                    <c:when test="${tarif.typePlace.libelle == 'Premium'}">
+                                        <i class="fas fa-crown"></i>
+                                    </c:when>
+                                    <c:when test="${tarif.typePlace.libelle == 'Handicapé'}">
+                                        <i class="fas fa-wheelchair"></i>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <i class="fas fa-chair"></i>
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
                             <div class="type-name">${tarif.typePlace.libelle}</div>
                             <div class="type-price">${tarif.prix}€</div>
                         </div>
@@ -95,21 +113,34 @@
             </div>
         </c:if>
 
-        <!-- PLAN DE SALLE -->
+        <!-- PLAN DE SALLE AMÉLIORÉ -->
         <div class="seance-plan">
+            <h3 class="plan-title"><i class="fas fa-th"></i> Plan de la salle</h3>
+            
             <div class="plan-legend">
                 <div class="legend-item">
                     <span class="place-preview place-libre"></span>
-                    <span>Place disponible</span>
+                    <span>Disponible</span>
                 </div>
                 <div class="legend-item">
                     <span class="place-preview place-reservee"></span>
-                    <span>Place réservée</span>
+                    <span>Réservée</span>
                 </div>
                 <div class="legend-item">
                     <span class="place-preview place-selectionnee"></span>
-                    <span>Place sélectionnée</span>
+                    <span>Sélectionnée</span>
                 </div>
+                
+                <!-- Légende par type de place -->
+                <div class="legend-separator"></div>
+                <c:if test="${not empty tarifs}">
+                    <c:forEach var="tarif" items="${tarifs}">
+                        <div class="legend-item legend-type" data-type="${tarif.typePlace.libelle}">
+                            <span class="place-preview place-type-${tarif.typePlace.libelle}"></span>
+                            <span>${tarif.typePlace.libelle}</span>
+                        </div>
+                    </c:forEach>
+                </c:if>
             </div>
 
             <div class="places-grid">
@@ -124,9 +155,12 @@
                                 
                                 <c:choose>
                                     <c:when test="${isReservee}">
-                                        <button type="button" class="place place-reservee" 
-                                                title="${typeLabel}" disabled>
-                                            ${place.numero}
+                                        <button type="button" 
+                                                class="place place-reservee place-type-${typeLabel}" 
+                                                title="${typeLabel} - Réservée" 
+                                                disabled>
+                                            <span class="place-numero">${place.numero}</span>
+                                            <span class="place-type-label">${typeLabel}</span>
                                         </button>
                                     </c:when>
                                     <c:otherwise>
@@ -137,9 +171,12 @@
                                                    class="place-checkbox"
                                                    onchange="updateSelection()"
                                                    data-price="${prix}"
-                                                   data-type="${typeLabel}">
-                                            <span class="place place-libre" title="Disponible">
-                                                ${place.numero}
+                                                   data-type="${typeLabel}"
+                                                   data-numero="${place.numero}"
+                                                   data-rangee="${place.rangee}">
+                                            <span class="place place-libre place-type-${typeLabel}">
+                                                <span class="place-numero">${place.numero}</span>
+                                                <span class="place-type-label">${typeLabel}</span>
                                             </span>
                                         </label>
                                     </c:otherwise>
@@ -154,7 +191,7 @@
         <!-- RÉSUMÉ ET BOUTONS -->
         <div class="reservation-summary">
             <div class="summary-box">
-                <h3>Résumé de votre sélection</h3>
+                <h3><i class="fas fa-receipt"></i> Résumé de votre sélection</h3>
                 <div class="summary-item">
                     <span class="label">Places sélectionnées :</span>
                     <span class="value" id="selectedPlacesDisplay">Aucune</span>
@@ -163,13 +200,16 @@
                     <span class="label">Nombre de places :</span>
                     <span class="value" id="selectedCountDisplay">0</span>
                 </div>
+                <div class="summary-details" id="summaryDetails">
+                    <!-- Les détails par type seront ajoutés ici dynamiquement -->
+                </div>
                 <div class="summary-item total">
-                    <span class="label">Montant estimé :</span>
+                    <span class="label">Montant total :</span>
                     <span class="value" id="estimatedTotalDisplay">0,00 €</span>
                 </div>
                 <p class="note-info">
                     <i class="fas fa-info-circle"></i>
-                    Prix unitaire : À confirmer lors du paiement
+                    Le montant sera confirmé lors du paiement
                 </p>
             </div>
 
@@ -199,6 +239,11 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                <div class="reservation-recap">
+                    <h6><i class="fas fa-ticket-alt"></i> Récapitulatif</h6>
+                    <div id="modalRecapContent"></div>
+                </div>
+                <hr>
                 <form id="clientForm">
                     <div class="form-group mb-3">
                         <label for="nomComplet" class="form-label">
@@ -233,665 +278,71 @@
     </div>
 </div>
 
-<style>
-            </div>
-        </div>
-
-        <div class="detail-card">
-            <div class="card-header">
-                <h3>Salle et configuration</h3>
-            </div>
-            <div class="card-body">
-                <div class="info-group">
-                    <label>Salle:</label>
-                    <p>
-                        <a href="<c:url value='/salles/${seance.salle.id}'/>" class="link">
-                            <strong>${seance.salle.nom}</strong>
-                        </a>
-                    </p>
-                </div>
-                <div class="info-group">
-                    <label>Capacité:</label>
-                    <p>${seance.salle.capacite} places</p>
-                </div>
-                <div class="info-group">
-                    <label>Statut:</label>
-                    <p>
-                        <c:choose>
-                            <c:when test="${seance.estDisponible()}">
-                                <span class="badge badge-success">Disponible</span>
-                            </c:when>
-                            <c:otherwise>
-                                <span class="badge badge-danger">Passée</span>
-                            </c:otherwise>
-                        </c:choose>
-                    </p>
-                </div>
-                <c:if test="${not empty seance.versionLangue}">
-                    <div class="info-group">
-                        <label>Version langue:</label>
-                        <p>${seance.versionLangue.libelle}</p>
-                    </div>
-                </c:if>
-            </div>
-        </div>
-    </div>
-
-    <div class="detail-row">
-        <div class="detail-card">
-            <div class="card-header">
-                <h3>Métadonnées</h3>
-            </div>
-            <div class="card-body">
-                <div class="info-group">
-                    <label>ID séance:</label>
-                    <p class="text-muted">${seance.id}</p>
-                </div>
-                <div class="info-group">
-                    <label>Créée le:</label>
-                    <p class="text-muted">${createdAtFormatted}</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="detail-card">
-            <div class="card-header">
-                <h3>Actions</h3>
-            </div>
-            <div class="card-body">
-                <p>
-                    <a href="<c:url value='/places?salle=${seance.salle.id}'/>" class="btn btn-sm btn-outline-primary btn-block">
-                        <i class="fas fa-chair"></i> Voir les places
-                    </a>
-                </p>
-                <p>
-                    <a href="<c:url value='/films/${seance.film.id}'/>" class="btn btn-sm btn-outline-info btn-block">
-                        <i class="fas fa-film"></i> Détails du film
-                    </a>
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<style>
-    .seance-reservation-container {
-        background: white;
-        border-radius: 12px;
-        padding: 30px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-
-    .content-header {
-        margin-bottom: 30px;
-    }
-
-    /* ALERTES */
-    .alert {
-        padding: 15px 20px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-weight: 500;
-        animation: slideDown 0.3s ease-out;
-    }
-
-    @keyframes slideDown {
-        from {
-            opacity: 0;
-            transform: translateY(-20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .alert-success {
-        background: #d1fae5;
-        color: #065f46;
-        border-left: 4px solid #10b981;
-    }
-
-    .alert-danger {
-        background: #fee2e2;
-        color: #991b1b;
-        border-left: 4px solid #ef4444;
-    }
-
-    .alert i {
-        font-size: 1.2rem;
-    }
-
-    .btn-close {
-        background: transparent;
-        border: none;
-        cursor: pointer;
-        font-size: 1.2rem;
-        margin-left: auto;
-        opacity: 0.7;
-        transition: opacity 0.2s;
-    }
-
-    .btn-close:hover {
-        opacity: 1;
-    }
-
-    /* TARIFS PAR TYPE */
-    .seance-place-types {
-        margin-bottom: 30px;
-        padding: 20px;
-        background: #f8f9fa;
-        border-radius: 8px;
-        border-left: 4px solid #003d7a;
-    }
-
-    .seance-place-types h3 {
-        margin: 0 0 15px 0;
-        color: #003d7a;
-        font-weight: 700;
-    }
-
-    .place-types-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 15px;
-    }
-
-    .place-type-card {
-        background: white;
-        padding: 15px;
-        border-radius: 6px;
-        border: 2px solid #e0e0e0;
-        text-align: center;
-        transition: all 0.2s ease;
-    }
-
-    .place-type-card:hover {
-        border-color: #003d7a;
-        box-shadow: 0 2px 8px rgba(0, 61, 122, 0.1);
-    }
-
-    .type-name {
-        font-weight: 600;
-        color: #1e293b;
-        font-size: 0.95rem;
-        margin-bottom: 8px;
-    }
-
-    .type-price {
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: #10b981;
-    }
-
-    /* EN-TÊTE SÉANCE */
-    .seance-header-info {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 30px;
-        margin-bottom: 40px;
-        padding-bottom: 30px;
-        border-bottom: 2px solid #e2e8f0;
-    }
-
-    .film-info h1 {
-        font-size: 2rem;
-        margin: 0 0 15px 0;
-        color: #003d7a;
-        font-weight: 700;
-    }
-
-    .seance-details {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-    }
-
-    .detail-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: #1e293b;
-        font-weight: 500;
-    }
-
-    .detail-item i {
-        color: #003d7a;
-        font-size: 1.1rem;
-    }
-
-    /* STATISTIQUES */
-    .occupation-stats {
-        display: flex;
-        gap: 20px;
-        justify-content: flex-end;
-    }
-
-    .stat {
-        text-align: center;
-    }
-
-    .stat-number {
-        font-size: 1.8rem;
-        font-weight: 700;
-        margin-bottom: 5px;
-    }
-
-    .stat-label {
-        font-size: 0.85rem;
-        color: #64748b;
-        font-weight: 500;
-    }
-
-    /* ÉCRAN */
-    .seance-screen {
-        text-align: center;
-        margin-bottom: 40px;
-        padding: 20px;
-        background: linear-gradient(135deg, #003d7a 0%, #0055b0 100%);
-        border-radius: 8px;
-        color: white;
-    }
-
-    .screen-label {
-        font-size: 1.3rem;
-        font-weight: 700;
-        letter-spacing: 2px;
-    }
-
-    /* LÉGENDE */
-    .plan-legend {
-        display: flex;
-        justify-content: center;
-        gap: 30px;
-        margin-bottom: 30px;
-        padding: 15px;
-        background: #f8f9fa;
-        border-radius: 8px;
-    }
-
-    .legend-item {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 0.9rem;
-        color: #1e293b;
-    }
-
-    .place-preview {
-        width: 25px;
-        height: 25px;
-        border-radius: 4px;
-        display: inline-block;
-    }
-
-    .place-libre {
-        background: #d1fae5;
-        border: 2px solid #10b981;
-    }
-
-    .place-reservee {
-        background: #fee2e2;
-        border: 2px solid #ef4444;
-    }
-
-    .place-selectionnee {
-        background: #dbeafe;
-        border: 2px solid #3b82f6;
-    }
-
-    /* PLAN DE SALLE */
-    .seance-plan {
-        margin-bottom: 40px;
-    }
-
-    .places-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-        padding: 20px;
-        background: #f8f9fa;
-        border-radius: 8px;
-    }
-
-    .rangee-row {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-
-    .rangee-label {
-        width: 40px;
-        text-align: center;
-        font-weight: 700;
-        color: #003d7a;
-        font-size: 0.95rem;
-    }
-
-    .places-row {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        justify-content: center;
-        flex-grow: 1;
-    }
-
-    /* PLACES */
-    .place {
-        width: 40px;
-        height: 40px;
-        padding: 0;
-        border: 2px solid #ccc;
-        border-radius: 4px;
-        background: #d1fae5;
-        color: #065f46;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        font-size: 0.85rem;
-    }
-
-    .place:hover:not(:disabled) {
-        transform: scale(1.1);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        border-color: #10b981;
-    }
-
-    .place-reservee {
-        background: #fee2e2;
-        color: #991b1b;
-        border-color: #ef4444;
-        cursor: not-allowed;
-        opacity: 0.6;
-    }
-
-    .place-label {
-        cursor: pointer;
-    }
-
-    .place-checkbox {
-        display: none;
-    }
-
-    .place-checkbox:checked + .place {
-        background: #dbeafe;
-        border-color: #3b82f6;
-        color: #1e40af;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-    }
-
-    /* RÉSUMÉ ET BOUTONS */
-    .reservation-summary {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 30px;
-        padding: 25px;
-        background: #f8f9fa;
-        border-radius: 8px;
-        border: 2px solid #e2e8f0;
-    }
-
-    .summary-box h3 {
-        margin: 0 0 20px 0;
-        font-size: 1.1rem;
-        color: #003d7a;
-        font-weight: 700;
-    }
-
-    .summary-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 0;
-        border-bottom: 1px solid #e2e8f0;
-    }
-
-    .summary-item.total {
-        border-bottom: none;
-        padding-top: 15px;
-        border-top: 2px solid #e2e8f0;
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: #003d7a;
-    }
-
-    .summary-item .label {
-        color: #64748b;
-        font-weight: 600;
-    }
-
-    .summary-item .value {
-        color: #1e293b;
-        font-weight: 700;
-        font-size: 1.05rem;
-    }
-
-    .note-info {
-        margin-top: 15px;
-        padding: 10px;
-        background: #eff6ff;
-        border-left: 4px solid #3b82f6;
-        color: #1e40af;
-        font-size: 0.9rem;
-        border-radius: 4px;
-    }
-
-    .note-info i {
-        margin-right: 5px;
-    }
-
-    .reservation-actions {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        justify-content: flex-end;
-    }
-
-    .btn {
-        padding: 12px 24px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 0.95rem;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        text-align: center;
-        justify-content: center;
-    }
-
-    .btn:hover:not(:disabled) {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-
-    .btn-primary {
-        background: #003d7a;
-        color: white;
-    }
-
-    .btn-primary:hover:not(:disabled) {
-        background: #002d5a;
-    }
-
-    .btn-primary:disabled {
-        background: #cbd5e1;
-        color: #94a3b8;
-        cursor: not-allowed;
-    }
-
-    .btn-secondary {
-        background: #6c757d;
-        color: white;
-    }
-
-    .btn-secondary:hover {
-        background: #545b62;
-    }
-
-    .btn-outline {
-        background: white;
-        color: #003d7a;
-        border: 2px solid #003d7a;
-    }
-
-    .btn-outline:hover {
-        background: #f8f9fa;
-    }
-
-    .btn-lg {
-        padding: 14px 28px;
-        font-size: 1.05rem;
-    }
-
-    .btn-sm {
-        padding: 8px 16px;
-        font-size: 0.85rem;
-    }
-
-    /* MODAL */
-    .modal-content {
-        border-radius: 8px;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-    }
-
-    .modal-header {
-        background: linear-gradient(135deg, #003d7a 0%, #0055b0 100%);
-        color: white;
-        border-bottom: none;
-        border-radius: 8px 8px 0 0;
-    }
-
-    .modal-header .modal-title {
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .modal-body {
-        padding: 25px;
-    }
-
-    .form-group label {
-        font-weight: 600;
-        color: #1e293b;
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .form-group label i {
-        color: #003d7a;
-    }
-
-    .form-control {
-        border: 2px solid #e2e8f0;
-        border-radius: 6px;
-        padding: 10px 12px;
-        font-size: 0.95rem;
-        transition: all 0.2s ease;
-    }
-
-    .form-control:focus {
-        border-color: #003d7a;
-        box-shadow: 0 0 0 3px rgba(0, 61, 122, 0.1);
-        outline: none;
-    }
-
-    .form-control::placeholder {
-        color: #cbd5e1;
-    }
-
-    .text-danger {
-        color: #ef4444;
-    }
-
-    .modal-footer {
-        border-top: 1px solid #e2e8f0;
-        padding: 15px 25px;
-    }
-
-    .alert-info {
-        background: #eff6ff;
-        border-left: 4px solid #3b82f6;
-        color: #1e40af;
-        margin-bottom: 0;
-    }
-
-    @media (max-width: 768px) {
-        .seance-header-info {
-            grid-template-columns: 1fr;
-        }
-
-        .occupation-stats {
-            justify-content: flex-start;
-            grid-column: 1;
-        }
-
-        .seance-details {
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .plan-legend {
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .rangee-row {
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .reservation-summary {
-            grid-template-columns: 1fr;
-        }
-
-        .place {
-            width: 35px;
-            height: 35px;
-            font-size: 0.75rem;
-        }
-    }
-</style>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    let selectedPlaces = [];
+
     function updateSelection() {
         const checkboxes = document.querySelectorAll('input[name="placeIds"]:checked');
         const selectedCount = checkboxes.length;
         const submitBtn = document.getElementById('submitBtn');
         
-        // Récupérer les numéros des places sélectionnées avec leur type
-        let placesSelected = [];
+        selectedPlaces = [];
         let totalPrice = 0;
+        let placesByType = {};
         
         checkboxes.forEach(cb => {
-            const placeLabel = cb.closest('.place-label');
-            const placeSpan = cb.nextElementSibling;
-            const placeNum = placeSpan ? placeSpan.textContent.trim() : '';
+            const placeNum = cb.getAttribute('data-numero');
+            const rangee = cb.getAttribute('data-rangee');
             const price = parseFloat(cb.getAttribute('data-price')) || 12.0;
             const type = cb.getAttribute('data-type') || 'Standard';
             
-            if (placeNum) {
-                placesSelected.push(`${placeNum} (${type})`);
-            }
+            const placeInfo = {
+                numero: placeNum,
+                rangee: rangee,
+                type: type,
+                price: price
+            };
+            
+            selectedPlaces.push(placeInfo);
             totalPrice += price;
+            
+            // Grouper par type
+            if (!placesByType[type]) {
+                placesByType[type] = {
+                    count: 0,
+                    total: 0,
+                    places: []
+                };
+            }
+            placesByType[type].count++;
+            placesByType[type].total += price;
+            placesByType[type].places.push(`${rangee}${placeNum}`);
         });
 
-        // Mettre à jour l'affichage
+        // Affichage des places sélectionnées
+        const placesDisplay = selectedPlaces.map(p => `${p.rangee}${p.numero}`).join(', ');
         document.getElementById('selectedCountDisplay').textContent = selectedCount;
         document.getElementById('selectedPlacesDisplay').textContent = 
-            selectedCount > 0 ? placesSelected.join(', ') : 'Aucune';
+            selectedCount > 0 ? placesDisplay : 'Aucune';
+        
+        // Affichage des détails par type
+        const summaryDetails = document.getElementById('summaryDetails');
+        if (selectedCount > 0) {
+            let detailsHtml = '';
+            for (const [type, info] of Object.entries(placesByType)) {
+                detailsHtml += `
+                    <div class="summary-detail-item">
+                        <span class="label">${type} (${info.count}x):</span>
+                        <span class="value">${info.total.toFixed(2)} €</span>
+                    </div>
+                `;
+            }
+            summaryDetails.innerHTML = detailsHtml;
+        } else {
+            summaryDetails.innerHTML = '';
+        }
+        
         document.getElementById('estimatedTotalDisplay').textContent = 
             totalPrice.toFixed(2) + ' €';
 
@@ -903,6 +354,7 @@
 
     function resetForm() {
         document.getElementById('reservationForm').reset();
+        selectedPlaces = [];
         updateSelection();
     }
 
@@ -912,6 +364,44 @@
             alert('Veuillez sélectionner au moins une place');
             return;
         }
+        
+        // Créer le récapitulatif pour le modal
+        let totalPrice = 0;
+        let recapHtml = '';
+        let placesByType = {};
+        
+        selectedPlaces.forEach(place => {
+            totalPrice += place.price;
+            if (!placesByType[place.type]) {
+                placesByType[place.type] = {
+                    count: 0,
+                    total: 0,
+                    places: []
+                };
+            }
+            placesByType[place.type].count++;
+            placesByType[place.type].total += place.price;
+            placesByType[place.type].places.push(`${place.rangee}${place.numero}`);
+        });
+        
+        for (const [type, info] of Object.entries(placesByType)) {
+            recapHtml += `
+                <div class="recap-item">
+                    <span><strong>${type}</strong> (${info.count}x): ${info.places.join(', ')}</span>
+                    <span>${info.total.toFixed(2)} €</span>
+                </div>
+            `;
+        }
+        
+        recapHtml += `
+            <div class="recap-item">
+                <span><strong>Total</strong></span>
+                <span><strong>${totalPrice.toFixed(2)} €</strong></span>
+            </div>
+        `;
+        
+        document.getElementById('modalRecapContent').innerHTML = recapHtml;
+        
         // Afficher le modal Bootstrap
         const modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
         modal.show();
