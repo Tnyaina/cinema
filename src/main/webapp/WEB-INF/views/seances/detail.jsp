@@ -64,6 +64,10 @@
                 <div class="stat-number" style="color: #3b82f6;">${tauxOccupation}%</div>
                 <div class="stat-label">Taux d'occupation</div>
             </div>
+            <div class="stat">
+                <div class="stat-number" style="color: #f59e0b;"><fmt:formatNumber value="${chiffresAffaires}" type="number" maxFractionDigits="2"/>€</div>
+                <div class="stat-label">Chiffre d'affaires</div>
+            </div>
         </div>
     </div>
 

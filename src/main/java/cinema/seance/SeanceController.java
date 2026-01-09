@@ -8,6 +8,7 @@ import cinema.place.Place;
 import cinema.place.PlaceService;
 import cinema.tarif.TarifSeance;
 import cinema.tarif.TarifSeanceRepository;
+import cinema.ticket.TicketService;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -21,6 +22,7 @@ public class SeanceController {
     private final SeanceService seanceService;
     private final PlaceService placeService;
     private final TarifSeanceRepository tarifSeanceRepository;
+    private final TicketService ticketService;
 
     @GetMapping
     public String listerSeances(
@@ -80,6 +82,8 @@ public class SeanceController {
         Integer placesDispoCount = placeService.obtenirNombrePlacesDisponibles(id, salleId);
         Integer placesReserveeCount = toutesLesPlaces.size() - placesDispoCount;
         Double tauxOccupation = placeService.obtenirTauxOccupation(id, salleId);
+        // Calculer le chiffre d'affaires pour cette séance
+        Double chiffresAffaires = ticketService.calculerChiffresAffairesSeance(id);
         
         model.addAttribute("seance", seance);
         model.addAttribute("placesParRangee", placesParRangee);
@@ -92,6 +96,7 @@ public class SeanceController {
         model.addAttribute("tauxOccupation", String.format("%.0f", tauxOccupation));
         model.addAttribute("totalPlaces", toutesLesPlaces.size());
         model.addAttribute("tarifs", tarifs);
+        model.addAttribute("chiffresAffaires", chiffresAffaires);
         model.addAttribute("page", "seances/detail");
         model.addAttribute("pageTitle", "Réserver - " + seance.getFilm().getTitre());
         model.addAttribute("pageActive", "seances");

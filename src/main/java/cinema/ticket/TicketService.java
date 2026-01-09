@@ -62,4 +62,17 @@ public class TicketService {
     public List<Ticket> obtenirTousLesTickets() {
         return ticketRepository.findAll();
     }
+
+    /**
+     * Calculer le chiffre d'affaires pour une séance donnée
+     * @param seanceId L'ID de la séance
+     * @return Le chiffre d'affaires total (somme des prix des tickets vendus/confirmés)
+     */
+    @Transactional(readOnly = true)
+    public Double calculerChiffresAffairesSeance(Long seanceId) {
+        List<Ticket> tickets = ticketRepository.findBySeanceId(seanceId);
+        return tickets.stream()
+            .mapToDouble(Ticket::getPrix)
+            .sum();
+    }
 }

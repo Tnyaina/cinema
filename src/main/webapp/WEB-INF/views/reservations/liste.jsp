@@ -23,6 +23,55 @@
     </c:if>
 
     <c:if test="${not empty reservations}">
+        <!-- Filtres -->
+        <div class="filters-section">
+            <div class="filters-header">
+                <h3><i class="fas fa-filter"></i> Filtrer les résultats</h3>
+                <button class="btn-reset" onclick="resetFilters()">
+                    <i class="fas fa-redo"></i> Réinitialiser
+                </button>
+            </div>
+            
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label for="filterFilm"><i class="fas fa-film"></i> Film</label>
+                    <select id="filterFilm" class="filter-select" onchange="applyFilters()">
+                        <option value="">Tous les films</option>
+                        <option value="">-- Chargement --</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filterClient"><i class="fas fa-user"></i> Client</label>
+                    <select id="filterClient" class="filter-select" onchange="applyFilters()">
+                        <option value="">Tous les clients</option>
+                        <option value="">-- Chargement --</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filterStatus"><i class="fas fa-check-circle"></i> Statut</label>
+                    <select id="filterStatus" class="filter-select" onchange="applyFilters()">
+                        <option value="">Tous les statuts</option>
+                        <option value="CREE">CREE</option>
+                        <option value="EN_ATTENTE">EN ATTENTE</option>
+                        <option value="PAYE">PAYE</option>
+                        <option value="CONFIRMEE">CONFIRMEE</option>
+                        <option value="ANNULEE">ANNULEE</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filterSearch"><i class="fas fa-search"></i> Recherche libre</label>
+                    <input type="text" id="filterSearch" class="filter-input" placeholder="Nom, email, film..." onkeyup="applyFilters()">
+                </div>
+            </div>
+
+            <div class="filters-info">
+                <span id="filterInfo">Toutes les réservations (${reservations.size()})</span>
+            </div>
+        </div>
+
         <div class="reservations-grid">
             <c:forEach var="reservation" items="${reservations}">
                 <div class="reservation-card">
@@ -385,3 +434,211 @@
         }
     }
 </style>
+
+<style>
+    /* Filtres */
+    .filters-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #f0f1f3 100%);
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+
+    .filters-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .filters-header h3 {
+        margin: 0;
+        color: #003d7a;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .filters-header h3 i {
+        font-size: 1.3rem;
+    }
+
+    .btn-reset {
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-reset:hover {
+        background: #545b62;
+    }
+
+    .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .filter-group label {
+        color: #003d7a;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .filter-group label i {
+        font-size: 1rem;
+    }
+
+    .filter-select,
+    .filter-input {
+        padding: 8px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        color: #1e293b;
+        background: white;
+        transition: all 0.2s ease;
+    }
+
+    .filter-select:focus,
+    .filter-input:focus {
+        outline: none;
+        border-color: #003d7a;
+        box-shadow: 0 0 0 3px rgba(0, 61, 122, 0.1);
+    }
+
+    .filters-info {
+        text-align: right;
+        color: #64748b;
+        font-size: 0.9rem;
+        font-weight: 600;
+        padding-top: 10px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .hidden-card {
+        display: none !important;
+    }
+</style>
+
+<script>
+    let allReservations = [];
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        buildFilters();
+        initializeFiltering();
+    });
+
+    function buildFilters() {
+        const cards = document.querySelectorAll('.reservation-card');
+        const films = new Set();
+        const clients = new Set();
+
+        cards.forEach(function(card) {
+            const filmTitle = card.querySelector('h4').textContent.trim();
+            const clientName = card.querySelector('.client-name').textContent.trim();
+
+            films.add(filmTitle);
+            clients.add(clientName);
+        });
+
+        // Remplir film
+        const filmSelect = document.getElementById('filterFilm');
+        Array.from(films).sort().forEach(function(film) {
+            if (film && film !== '-- Chargement --' && !film.includes('Réservation')) {
+                const option = document.createElement('option');
+                option.value = film;
+                option.textContent = film;
+                filmSelect.appendChild(option);
+            }
+        });
+
+        // Remplir client
+        const clientSelect = document.getElementById('filterClient');
+        Array.from(clients).sort().forEach(function(client) {
+            if (client && client !== '-- Chargement --' && client !== 'Client anonyme') {
+                const option = document.createElement('option');
+                option.value = client;
+                option.textContent = client;
+                clientSelect.appendChild(option);
+            }
+        });
+    }
+
+    function initializeFiltering() {
+        const cards = document.querySelectorAll('.reservation-card');
+        allReservations = Array.from(cards);
+    }
+
+    function applyFilters() {
+        const filmFilter = document.getElementById('filterFilm').value.toLowerCase();
+        const clientFilter = document.getElementById('filterClient').value.toLowerCase();
+        const statusFilter = document.getElementById('filterStatus').value.toLowerCase();
+        const searchFilter = document.getElementById('filterSearch').value.toLowerCase();
+
+        let visibleCount = 0;
+
+        allReservations.forEach(function(card) {
+            const filmText = card.querySelector('h4').textContent.trim().toLowerCase();
+            const clientText = card.querySelector('.client-name').textContent.trim().toLowerCase();
+            const statusText = card.querySelector('.status-badge').textContent.trim().toLowerCase();
+            const emailText = card.querySelector('.client-name').parentElement.parentElement.textContent.toLowerCase();
+
+            let show = true;
+
+            if (filmFilter && !filmText.includes(filmFilter)) show = false;
+            if (clientFilter && !clientText.includes(clientFilter)) show = false;
+            if (statusFilter && !statusText.includes(statusFilter)) show = false;
+            
+            if (searchFilter) {
+                const searchFields = [filmText, clientText, statusText, emailText];
+                if (!searchFields.some(field => field.includes(searchFilter))) {
+                    show = false;
+                }
+            }
+
+            if (show) {
+                card.classList.remove('hidden-card');
+                visibleCount++;
+            } else {
+                card.classList.add('hidden-card');
+            }
+        });
+
+        // Mettre à jour les infos
+        const totalReservations = allReservations.length;
+        const infoText = searchFilter || filmFilter || clientFilter || statusFilter
+            ? `Résultats filtrés : ${visibleCount} / ${totalReservations}`
+            : `Toutes les réservations (${totalReservations})`;
+        document.getElementById('filterInfo').textContent = infoText;
+    }
+
+    function resetFilters() {
+        document.getElementById('filterFilm').value = '';
+        document.getElementById('filterClient').value = '';
+        document.getElementById('filterStatus').value = '';
+        document.getElementById('filterSearch').value = '';
+        applyFilters();
+    }
+</script>
