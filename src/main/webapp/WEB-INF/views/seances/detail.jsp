@@ -1,0 +1,354 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ page import="cinema.shared.DateUtils" %>
+
+<c:set var="createdAtFormatted" value="<%= DateUtils.formatDateTime(((cinema.seance.Seance)pageContext.findAttribute(\"seance\")).getCreatedAt()) %>" />
+
+<div class="content-header">
+    <h1>${seance.film.titre}</h1>
+    <div class="header-actions">
+        <a href="<c:url value='/seances/${seance.id}/modifier'/>" class="btn btn-warning">
+            <i class="fas fa-edit"></i> Modifier
+        </a>
+        <a href="<c:url value='/seances/${seance.id}/supprimer'/>" class="btn btn-danger">
+            <i class="fas fa-trash"></i> Supprimer
+        </a>
+        <a href="<c:url value='/seances'/>" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+    </div>
+</div>
+
+<div class="detail-container">
+    <div class="detail-row">
+        <div class="detail-card">
+            <div class="card-header">
+                <h3>Informations de la projection</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-group">
+                    <label>Film:</label>
+                    <p><strong>${seance.film.titre}</strong></p>
+                </div>
+                <div class="info-group">
+                    <label>Durée:</label>
+                    <p>${seance.film.dureeMinutes} minutes</p>
+                </div>
+                <div class="info-group">
+                    <label>Date:</label>
+                    <p>${seance.getDateSeanceFormatted()}</p>
+                </div>
+                <div class="info-group">
+                    <label>Heure de début:</label>
+                    <p><code>${seance.getHeureDebutFormatted()}</code></p>
+                </div>
+                <c:if test="${not empty seance.fin}">
+                    <div class="info-group">
+                        <label>Heure de fin:</label>
+                        <p><code>${seance.getHeureFin()}</code></p>
+                    </div>
+                </c:if>
+            </div>
+        </div>
+
+        <div class="detail-card">
+            <div class="card-header">
+                <h3>Salle et configuration</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-group">
+                    <label>Salle:</label>
+                    <p>
+                        <a href="<c:url value='/salles/${seance.salle.id}'/>" class="link">
+                            <strong>${seance.salle.nom}</strong>
+                        </a>
+                    </p>
+                </div>
+                <div class="info-group">
+                    <label>Capacité:</label>
+                    <p>${seance.salle.capacite} places</p>
+                </div>
+                <div class="info-group">
+                    <label>Statut:</label>
+                    <p>
+                        <c:choose>
+                            <c:when test="${seance.estDisponible()}">
+                                <span class="badge badge-success">Disponible</span>
+                            </c:when>
+                            <c:otherwise>
+                                <span class="badge badge-danger">Passée</span>
+                            </c:otherwise>
+                        </c:choose>
+                    </p>
+                </div>
+                <c:if test="${not empty seance.versionLangue}">
+                    <div class="info-group">
+                        <label>Version langue:</label>
+                        <p>${seance.versionLangue.libelle}</p>
+                    </div>
+                </c:if>
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-row">
+        <div class="detail-card">
+            <div class="card-header">
+                <h3>Métadonnées</h3>
+            </div>
+            <div class="card-body">
+                <div class="info-group">
+                    <label>ID séance:</label>
+                    <p class="text-muted">${seance.id}</p>
+                </div>
+                <div class="info-group">
+                    <label>Créée le:</label>
+                    <p class="text-muted">${createdAtFormatted}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-card">
+            <div class="card-header">
+                <h3>Actions</h3>
+            </div>
+            <div class="card-body">
+                <p>
+                    <a href="<c:url value='/places?salle=${seance.salle.id}'/>" class="btn btn-sm btn-outline-primary btn-block">
+                        <i class="fas fa-chair"></i> Voir les places
+                    </a>
+                </p>
+                <p>
+                    <a href="<c:url value='/films/${seance.film.id}'/>" class="btn btn-sm btn-outline-info btn-block">
+                        <i class="fas fa-film"></i> Détails du film
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 40px;
+        gap: 20px;
+    }
+
+    .content-header h1 {
+        margin: 0;
+        font-size: 32px;
+        color: #003d7a;
+        font-weight: 600;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .detail-container {
+        margin: 30px 0;
+    }
+
+    .detail-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 25px;
+        margin-bottom: 25px;
+    }
+
+    .detail-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 61, 122, 0.08);
+    }
+
+    .detail-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 61, 122, 0.15);
+    }
+
+    .card-header {
+        background-color: #003d7a;
+        color: white;
+        padding: 20px;
+    }
+
+    .card-header h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .card-body {
+        padding: 25px;
+    }
+
+    .info-group {
+        margin-bottom: 20px;
+    }
+
+    .info-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .info-group label {
+        font-weight: 600;
+        color: #555;
+        display: block;
+        margin-bottom: 8px;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-group p {
+        margin: 0;
+        color: #333;
+        font-size: 15px;
+        padding: 8px 0;
+    }
+
+    .info-group code {
+        background-color: #f5f5f5;
+        padding: 4px 8px;
+        border-radius: 3px;
+        font-family: monospace;
+    }
+
+    .text-muted {
+        color: #999;
+    }
+
+    .link {
+        color: #003d7a;
+        text-decoration: none;
+    }
+
+    .link:hover {
+        text-decoration: underline;
+    }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 13px;
+        font-weight: 500;
+        display: inline-block;
+    }
+
+    .badge-success {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .badge-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .btn {
+        padding: 10px 18px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-warning {
+        background-color: #ffc107;
+        color: white;
+    }
+
+    .btn-warning:hover {
+        background-color: #e0a800;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background-color: #545b62;
+    }
+
+    .btn-sm {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .btn-outline-primary {
+        border: 2px solid #003d7a;
+        color: #003d7a;
+        background-color: transparent;
+        padding: 8px 14px;
+    }
+
+    .btn-outline-primary:hover {
+        background-color: #003d7a;
+        color: white;
+    }
+
+    .btn-outline-info {
+        border: 2px solid #17a2b8;
+        color: #17a2b8;
+        background-color: transparent;
+        padding: 8px 14px;
+    }
+
+    .btn-outline-info:hover {
+        background-color: #17a2b8;
+        color: white;
+    }
+
+    .btn-block {
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 10px;
+    }
+
+    @media (max-width: 768px) {
+        .content-header {
+            flex-direction: column;
+        }
+
+        .detail-row {
+            grid-template-columns: 1fr;
+        }
+
+        .header-actions {
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .btn-block {
+            flex: 1;
+            min-width: 150px;
+        }
+    }
+</style>
