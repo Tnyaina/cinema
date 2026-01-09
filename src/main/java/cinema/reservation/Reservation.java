@@ -22,7 +22,7 @@ public class Reservation extends BaseEntity {
     @JoinColumn(name = "id_status")
     private Status status;
 
-    @Column(columnDefinition = "DECIMAL(6,2)")
+    @Column(columnDefinition = "NUMERIC(6,2)")
     private Double montantTotal = 0.0;
 
     // Constructeurs

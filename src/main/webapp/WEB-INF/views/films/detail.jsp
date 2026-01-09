@@ -3,11 +3,9 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
 
 <div class="content-header">
-    <div class="header-nav">
-        <a href="<c:url value='/films'/>" class="btn btn-secondary btn-sm">
-            <i class="fas fa-arrow-left"></i> Retour
-        </a>
-    </div>
+    <a href="<c:url value='/films'/>" class="btn btn-back">
+        <i class="fas fa-arrow-left"></i> Retour
+    </a>
 </div>
 
 <div class="film-detail-container">
@@ -38,32 +36,29 @@
             
             <div class="film-metadata">
                 <div class="metadata-row">
-                    <span class="label">Durée :</span>
+                    <span class="label">Durée</span>
                     <span class="value">
                         <i class="fas fa-clock"></i> ${film.dureeMinutes} minutes
                     </span>
                 </div>
 
                 <div class="metadata-row">
-                    <span class="label">Date de sortie :</span>
+                    <span class="label">Date de sortie</span>
                     <span class="value">
-                        <i class="fas fa-calendar"></i>
-                        ${film.dateSortieFormatted}
+                        <i class="fas fa-calendar"></i> ${film.dateSortieFormatted}
                     </span>
                 </div>
 
                 <div class="metadata-row">
-                    <span class="label">Âge minimum :</span>
+                    <span class="label">Âge minimum</span>
                     <span class="value">
-                        <span class="badge badge-${film.ageMin > 12 ? 'danger' : 'success'}">
-                            ${film.ageMin}+
-                        </span>
+                        ${film.ageMin}+
                     </span>
                 </div>
 
                 <c:if test="${not empty film.langueOriginale}">
                     <div class="metadata-row">
-                        <span class="label">Langue originale :</span>
+                        <span class="label">Langue originale</span>
                         <span class="value">
                             <i class="fas fa-language"></i> ${film.langueOriginale.libelle}
                         </span>
@@ -72,11 +67,10 @@
 
                 <c:if test="${not empty film.genres}">
                     <div class="metadata-row">
-                        <span class="label">Genres :</span>
-                        <span class="value">
+                        <span class="label">Genres</span>
+                        <span class="value genres-list">
                             <c:forEach var="genre" items="${film.genres}" varStatus="status">
-                                <span class="badge badge-info">${genre.libelle}</span>
-                                <c:if test="${not status.last}"></c:if>
+                                <span class="genre-tag">${genre.libelle}</span>
                             </c:forEach>
                         </span>
                     </div>
@@ -84,10 +78,10 @@
             </div>
 
             <div class="film-actions-detail">
-                <a href="<c:url value='/films/${film.id}/modifier'/>" class="btn btn-warning btn-lg">
+                <a href="<c:url value='/films/${film.id}/modifier'/>" class="btn btn-primary">
                     <i class="fas fa-edit"></i> Modifier
                 </a>
-                <button type="button" class="btn btn-danger btn-lg" onclick="openDeleteModal()">
+                <button type="button" class="btn btn-danger" onclick="openDeleteModal()">
                     <i class="fas fa-trash"></i> Supprimer
                 </button>
             </div>
@@ -114,11 +108,11 @@
                                 <div class="seance-date-time">
                                     <p class="seance-date">
                                         <i class="fas fa-calendar-alt"></i>
-                                        <strong>${seance.dateSeanceFormatted}</strong>
+                                        ${seance.dateSeanceFormatted}
                                     </p>
                                     <p class="seance-hour">
                                         <i class="fas fa-clock"></i>
-                                        <strong>${seance.heureDebutFormatted}</strong>
+                                        ${seance.heureDebutFormatted}
                                         <c:if test="${not empty seance.fin}">
                                             - ${seance.heureFin}
                                         </c:if>
@@ -127,7 +121,7 @@
                                 <div class="seance-room">
                                     <p class="seance-salle">
                                         <i class="fas fa-door-open"></i>
-                                        <strong>${seance.salle.nom}</strong>
+                                        ${seance.salle.nom}
                                     </p>
                                     <c:if test="${not empty seance.versionLangue}">
                                         <p class="seance-version">
@@ -141,13 +135,13 @@
                                 <div class="seance-places">
                                     <c:choose>
                                         <c:when test="${seance.placesDisponibles > 0}">
-                                            <span class="badge badge-success">
+                                            <span class="badge-places available">
                                                 <i class="fas fa-chair"></i>
-                                                ${seance.placesDisponibles} place<c:if test="${seance.placesDisponibles > 1}">s</c:if> disponible<c:if test="${seance.placesDisponibles > 1}">s</c:if>
+                                                ${seance.placesDisponibles} place<c:if test="${seance.placesDisponibles > 1}">s</c:if>
                                             </span>
                                         </c:when>
                                         <c:otherwise>
-                                            <span class="badge badge-danger">
+                                            <span class="badge-places full">
                                                 <i class="fas fa-ban"></i>
                                                 Complet
                                             </span>
@@ -155,8 +149,8 @@
                                     </c:choose>
                                 </div>
                                 <c:if test="${seance.placesDisponibles > 0}">
-                                    <a href="<c:url value='/seances/${seance.id}'/>" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-eye"></i> Voir les places
+                                    <a href="<c:url value='/seances/${seance.id}'/>" class="btn btn-view">
+                                        <i class="fas fa-eye"></i> Voir
                                     </a>
                                 </c:if>
                             </div>
@@ -165,7 +159,7 @@
                 </div>
             </c:when>
             <c:otherwise>
-                <div class="alert alert-info">
+                <div class="empty-state">
                     <i class="fas fa-info-circle"></i>
                     Aucune séance disponible pour ce film actuellement.
                 </div>
@@ -174,7 +168,7 @@
     </div>
 </div>
 
-<!-- MODAL SUPPRESSION - CACHÉ PAR DÉFAUT -->
+<!-- MODAL SUPPRESSION -->
 <div class="modal-overlay" id="deleteModal" style="display: none;" onclick="closeDeleteModal()">
     <div class="modal-dialog" onclick="event.stopPropagation()">
         <div class="modal-header">
@@ -187,7 +181,7 @@
         </div>
         <div class="modal-body">
             <p>Êtes-vous sûr de vouloir supprimer le film <strong>${film.titre}</strong> ?</p>
-            <p class="text-danger">
+            <p class="warning-text">
                 <i class="fas fa-exclamation-triangle"></i>
                 Cette action ne peut pas être annulée.
             </p>
@@ -202,24 +196,89 @@
 </div>
 
 <style>
+    .content-header {
+        margin-bottom: 24px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        border-radius: 6px;
+        text-decoration: none;
+        cursor: pointer;
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+        transition: all 0.15s;
+        font-weight: 500;
+    }
+
+    .btn-back {
+        background-color: #f3f4f6;
+        color: #374151;
+    }
+
+    .btn-back:hover {
+        background-color: #e5e7eb;
+    }
+
+    .btn-primary {
+        background-color: #003d7a;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #002952;
+    }
+
+    .btn-danger {
+        background-color: #dc2626;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background-color: #b91c1c;
+    }
+
+    .btn-secondary {
+        background-color: #6b7280;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background-color: #4b5563;
+    }
+
+    .btn-view {
+        background-color: #003d7a;
+        color: white;
+        padding: 8px 14px;
+        font-size: 13px;
+    }
+
+    .btn-view:hover {
+        background-color: #002952;
+    }
+
     .film-detail-container {
         background: white;
-        border-radius: 12px;
-        padding: 30px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        padding: 32px;
+        border: 1px solid #e5e7eb;
     }
 
     .film-detail-header {
         display: grid;
-        grid-template-columns: 300px 1fr;
-        gap: 40px;
-        margin-bottom: 40px;
+        grid-template-columns: 280px 1fr;
+        gap: 32px;
+        margin-bottom: 32px;
     }
 
     .film-poster-large {
-        border-radius: 12px;
+        border-radius: 8px;
         overflow: hidden;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         height: fit-content;
         position: relative;
     }
@@ -232,18 +291,18 @@
 
     .age-badge-overlay {
         position: absolute;
-        top: 15px;
-        right: 15px;
+        top: 12px;
+        right: 12px;
     }
 
     .age-badge {
         display: inline-block;
-        padding: 8px 16px;
-        border-radius: 8px;
-        font-weight: 700;
-        font-size: 0.875rem;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 13px;
         color: white;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
 
     .badge-all { background: #10b981; }
@@ -252,231 +311,236 @@
     .badge-18 { background: #991b1b; }
 
     .film-detail-info h1 {
-        font-size: 2.5rem;
-        margin: 0 0 30px 0;
-        color: #1e293b;
-        font-weight: 700;
+        font-size: 32px;
+        margin: 0 0 24px 0;
+        color: #111827;
+        font-weight: 600;
     }
 
     .film-metadata {
-        background: #f8f9fa;
-        border-radius: 12px;
-        padding: 24px;
-        margin-bottom: 30px;
+        background: #f9fafb;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 24px;
     }
 
     .metadata-row {
         display: flex;
-        align-items: center;
-        padding: 12px 0;
-        border-bottom: 1px solid #e9ecef;
+        align-items: flex-start;
+        padding: 10px 0;
+        border-bottom: 1px solid #e5e7eb;
     }
 
     .metadata-row:last-child {
         border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .metadata-row:first-child {
+        padding-top: 0;
     }
 
     .metadata-row .label {
-        font-weight: 600;
-        width: 170px;
-        color: #64748b;
-        font-size: 0.95rem;
+        font-weight: 500;
+        width: 150px;
+        color: #6b7280;
+        font-size: 14px;
     }
 
     .metadata-row .value {
         flex: 1;
-        color: #1e293b;
+        color: #111827;
         display: flex;
         align-items: center;
         gap: 8px;
-        font-weight: 500;
+        font-size: 14px;
     }
 
-    .metadata-row .badge-info {
+    .metadata-row .value i {
+        color: #003d7a;
+        width: 16px;
+        flex-shrink: 0;
+    }
+
+    .genres-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .genre-tag {
         background: #dbeafe;
-        color: #1e40af;
-        padding: 4px 12px;
-        border-radius: 6px;
-        font-size: 0.875rem;
-        font-weight: 600;
-        margin-right: 6px;
+        color: #003d7a;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 13px;
+        font-weight: 500;
     }
 
     .film-actions-detail {
         display: flex;
-        gap: 15px;
-        margin-top: 30px;
-    }
-
-    .btn-lg {
-        padding: 14px 28px;
-        font-size: 1rem;
-        font-weight: 600;
-        border-radius: 8px;
+        gap: 12px;
+        margin-top: 24px;
     }
 
     .film-description-section {
-        margin-bottom: 40px;
-        padding: 24px;
-        background: #f8f9fa;
-        border-radius: 12px;
+        margin-bottom: 32px;
+        padding: 20px;
+        background: #f9fafb;
+        border-radius: 8px;
     }
 
     .film-description-section h2 {
-        font-size: 1.5rem;
-        margin-bottom: 15px;
-        color: #1e293b;
-        font-weight: 700;
+        font-size: 20px;
+        margin-bottom: 12px;
+        color: #111827;
+        font-weight: 600;
     }
 
     .description-text {
-        color: #475569;
-        line-height: 1.7;
-        font-size: 1.05rem;
+        color: #374151;
+        line-height: 1.6;
+        font-size: 15px;
+        margin: 0;
     }
 
     .film-seances-section h2 {
-        font-size: 1.5rem;
-        margin-bottom: 24px;
-        color: #1e293b;
-        font-weight: 700;
+        font-size: 20px;
+        margin-bottom: 20px;
+        color: #111827;
+        font-weight: 600;
     }
 
     .seances-list {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 18px;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 16px;
     }
 
     .seance-card {
         background: white;
-        border: 2px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 20px;
-        transition: all 0.3s ease;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 16px;
+        transition: all 0.2s ease;
         display: flex;
         flex-direction: column;
         height: 100%;
     }
 
     .seance-card:hover {
-        border-color: #3b82f6;
-        box-shadow: 0 8px 16px rgba(59,130,246,0.15);
-        transform: translateY(-2px);
+        border-color: #003d7a;
+        box-shadow: 0 4px 12px rgba(0, 61, 122, 0.1);
     }
 
     .seance-header {
         flex-grow: 1;
-        margin-bottom: 15px;
+        margin-bottom: 12px;
     }
 
     .seance-date-time,
     .seance-room {
-        margin-bottom: 12px;
+        margin-bottom: 10px;
     }
 
     .seance-date-time p,
     .seance-room p {
-        margin: 8px 0;
-        color: #1e293b;
+        margin: 6px 0;
+        color: #111827;
         display: flex;
         align-items: center;
-        gap: 10px;
-        font-size: 0.95rem;
+        gap: 8px;
+        font-size: 14px;
     }
 
     .seance-date-time i,
     .seance-room i {
         color: #003d7a;
-        width: 18px;
+        width: 16px;
         text-align: center;
-        font-size: 1.05rem;
         flex-shrink: 0;
     }
 
     .seance-date {
-        font-weight: 700;
+        font-weight: 600;
         color: #003d7a;
-        font-size: 1rem;
     }
 
     .seance-hour {
-        font-weight: 600;
-        color: #0f172a;
+        font-weight: 500;
+        color: #374151;
     }
 
     .seance-salle {
-        font-weight: 600;
-        color: #1e293b;
+        font-weight: 500;
+        color: #111827;
     }
 
     .seance-version {
-        font-size: 0.9rem;
-        color: #64748b;
-        font-weight: 500;
+        font-size: 13px;
+        color: #6b7280;
+        font-weight: 400;
     }
 
     .seance-footer {
-        border-top: 1px solid #e2e8f0;
+        border-top: 1px solid #e5e7eb;
         padding-top: 12px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
     }
 
-    .seance-places {
-        display: flex;
-        align-items: center;
-    }
-
-    .seance-places .badge {
-        padding: 6px 12px;
-        border-radius: 6px;
-        font-weight: 600;
-        font-size: 0.85rem;
+    .badge-places {
+        padding: 6px 10px;
+        border-radius: 4px;
+        font-weight: 500;
+        font-size: 13px;
         display: flex;
         align-items: center;
         gap: 6px;
         white-space: nowrap;
     }
 
-    .badge-success {
+    .badge-places.available {
         background: #d1fae5;
         color: #065f46;
     }
 
-    .badge-danger {
+    .badge-places.full {
         background: #fee2e2;
         color: #991b1b;
     }
 
-    .btn-primary.btn-sm {
-        padding: 6px 12px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        border-radius: 6px;
-        white-space: nowrap;
-        flex-shrink: 0;
+    .empty-state {
+        padding: 32px 24px;
+        text-align: center;
+        color: #6b7280;
+        background: #f9fafb;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
     }
 
-    /* Modal styles - CACHÉ PAR DÉFAUT */
+    /* Modal styles */
     .modal-overlay {
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.6);
+        background: rgba(0, 0, 0, 0.5);
         z-index: 9999;
         align-items: center;
         justify-content: center;
-        backdrop-filter: blur(4px);
+        backdrop-filter: blur(2px);
     }
 
     .modal-dialog {
         background: white;
-        border-radius: 12px;
+        border-radius: 8px;
         max-width: 500px;
         width: 90%;
         box-shadow: 0 20px 60px rgba(0,0,0,0.3);
@@ -484,7 +548,7 @@
 
     .modal-header {
         padding: 20px 24px;
-        border-bottom: 1px solid #e2e8f0;
+        border-bottom: 1px solid #e5e7eb;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -492,29 +556,29 @@
 
     .modal-title {
         margin: 0;
-        font-size: 1.25rem;
-        font-weight: 700;
+        font-size: 18px;
+        font-weight: 600;
         color: #dc2626;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
     }
 
     .modal-close {
         background: none;
         border: none;
-        font-size: 1.5rem;
-        color: #64748b;
+        font-size: 24px;
+        color: #6b7280;
         cursor: pointer;
         padding: 4px 8px;
         line-height: 1;
         border-radius: 4px;
-        transition: all 0.2s;
+        transition: all 0.15s;
     }
 
     .modal-close:hover {
-        background: #f1f5f9;
-        color: #1e293b;
+        background: #f3f4f6;
+        color: #111827;
     }
 
     .modal-body {
@@ -522,14 +586,14 @@
     }
 
     .modal-body p {
-        margin-bottom: 16px;
-        color: #1e293b;
-        line-height: 1.6;
+        margin-bottom: 12px;
+        color: #374151;
+        line-height: 1.5;
     }
 
-    .text-danger {
+    .warning-text {
         color: #dc2626;
-        font-weight: 600;
+        font-weight: 500;
         display: flex;
         align-items: center;
         gap: 8px;
@@ -537,9 +601,9 @@
 
     .modal-footer {
         padding: 16px 24px;
-        border-top: 1px solid #e2e8f0;
+        border-top: 1px solid #e5e7eb;
         display: flex;
-        gap: 12px;
+        gap: 10px;
         justify-content: flex-end;
     }
 
@@ -549,13 +613,12 @@
         }
 
         .film-poster-large {
-            max-width: 300px;
+            max-width: 280px;
             margin: 0 auto;
         }
 
         .film-detail-info h1 {
-            font-size: 2rem;
-            text-align: center;
+            font-size: 24px;
         }
 
         .film-actions-detail {

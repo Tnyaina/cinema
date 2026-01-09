@@ -469,8 +469,6 @@
 </style>
 
 <script>
-    let typesPlaceOptions = '';
-
     function onSalleChange() {
         const select = document.getElementById('salleId');
         const salleInfo = document.getElementById('salleInfo');
@@ -490,34 +488,40 @@
         const tr = document.createElement('tr');
         tr.className = 'rangee-row';
         
-        tr.innerHTML = `
-            <td>
-                <input type="text" name="rangees[]" class="form-control rangee-input" 
-                       placeholder="Ex: A" maxlength="5" required>
-            </td>
-            <td>
-                <input type="number" name="numeroDebuts[]" class="form-control numero-input" 
-                       placeholder="1" min="1" required>
-            </td>
-            <td>
-                <input type="number" name="numeroFins[]" class="form-control numero-input" 
-                       placeholder="10" min="1" required>
-            </td>
-            <td>
-                <span class="nombre-places">-</span>
-            </td>
-            <td>
-                <select name="typePlaceIds[]" class="form-control">
-                    ${typesPlaceOptions}
-                </select>
-            </td>
-            <td>
-                <button type="button" class="btn btn-sm btn-danger" onclick="supprimerLigne(this)">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
-        `;
+        // Récupérer le premier select et cloner ses options
+        const firstSelect = document.querySelector('select[name="typePlaceIds[]"]');
+        let selectHTML = '<select name="typePlaceIds[]" class="form-control">';
+        if (firstSelect) {
+            const options = firstSelect.querySelectorAll('option');
+            options.forEach(opt => {
+                selectHTML += '<option value="' + opt.value + '">' + opt.textContent + '</option>';
+            });
+        } else {
+            selectHTML += '<option value="">-- Aucun --</option>';
+        }
+        selectHTML += '</select>';
         
+        let rowHTML = '';
+        rowHTML += '<td>';
+        rowHTML += '<input type="text" name="rangees[]" class="form-control rangee-input" placeholder="Ex: A" maxlength="5" required>';
+        rowHTML += '</td>';
+        rowHTML += '<td>';
+        rowHTML += '<input type="number" name="numeroDebuts[]" class="form-control numero-input" placeholder="1" min="1" required>';
+        rowHTML += '</td>';
+        rowHTML += '<td>';
+        rowHTML += '<input type="number" name="numeroFins[]" class="form-control numero-input" placeholder="10" min="1" required>';
+        rowHTML += '</td>';
+        rowHTML += '<td>';
+        rowHTML += '<span class="nombre-places">-</span>';
+        rowHTML += '</td>';
+        rowHTML += '<td>';
+        rowHTML += selectHTML;
+        rowHTML += '</td>';
+        rowHTML += '<td>';
+        rowHTML += '<button type="button" class="btn btn-sm btn-danger" onclick="supprimerLigne(this)"><i class="fas fa-trash"></i></button>';
+        rowHTML += '</td>';
+        
+        tr.innerHTML = rowHTML;
         tbody.appendChild(tr);
         attachInputListeners(tr);
         updateTotal();
@@ -560,18 +564,6 @@
 
     // Initialiser les listeners au chargement
     document.addEventListener('DOMContentLoaded', function() {
-        // Récupérer les options des types de place depuis le select original
-        const typeSelectOriginal = document.querySelector('select[name="typePlaceIds[]"]');
-        if (typeSelectOriginal) {
-            typesPlaceOptions = '<option value="">-- Aucun --</option>';
-            const options = typeSelectOriginal.querySelectorAll('option');
-            options.forEach(opt => {
-                if (opt.value) {
-                    typesPlaceOptions += `<option value="${opt.value}">${opt.textContent}</option>`;
-                }
-            });
-        }
-        
         const rows = document.querySelectorAll('.rangee-row');
         rows.forEach(attachInputListeners);
         updateTotal();

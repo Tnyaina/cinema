@@ -66,9 +66,9 @@
                         <i class="fas fa-chair"></i>
                         <span>Places & Sièges</span>
                     </a>
-                    <a href="<c:url value='/types-places'/>" class="nav-item ${pageActive == 'typesPlaces' ? 'active' : ''}">
+                    <a href="<c:url value='/types-place'/>" class="nav-item ${pageActive == 'types-place' ? 'active' : ''}">
                         <i class="fas fa-couch"></i>
-                        <span>Types de places</span>
+                        <span>Types de place</span>
                     </a>
                 </div>
 
@@ -97,20 +97,20 @@
                         <i class="fas fa-users"></i>
                         <span>Personnes</span>
                     </a>
-                    <a href="<c:url value='/categories-personnes'/>" class="nav-item ${pageActive == 'categoriesPersonnes' ? 'active' : ''}">
+                    <a href="<c:url value='/categories-personne'/>" class="nav-item ${pageActive == 'categories-personne' ? 'active' : ''}">
                         <i class="fas fa-user-tag"></i>
-                        <span>Catégories</span>
+                        <span>Catégories de personne</span>
                     </a>
                 </div>
 
                 <!-- TARIFICATION -->
                 <div class="nav-section">
                     <div class="nav-section-title">Tarification</div>
-                    <a href="<c:url value='/tarifs-defaut'/>" class="nav-item ${pageActive == 'tarifsDefaut' ? 'active' : ''}">
+                    <a href="<c:url value='/tarifs-defaut'/>" class="nav-item ${pageActive == 'tarifs-defaut' ? 'active' : ''}">
                         <i class="fas fa-euro-sign"></i>
                         <span>Tarifs par défaut</span>
                     </a>
-                    <a href="<c:url value='/tarifs-seances'/>" class="nav-item ${pageActive == 'tarifsSeances' ? 'active' : ''}">
+                    <a href="<c:url value='/tarifs-seance'/>" class="nav-item ${pageActive == 'tarifs-seance' ? 'active' : ''}">
                         <i class="fas fa-money-bill-wave"></i>
                         <span>Tarifs par séance</span>
                     </a>

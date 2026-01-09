@@ -23,13 +23,13 @@ public class Seance extends BaseEntity {
     @JoinColumn(name = "id_salle")
     private Salle salle;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TIMESTAMPTZ")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime debut;
 
-    @Column
-    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
-    private LocalDateTime fin;
+    @Column(columnDefinition = "TIME")
+    @DateTimeFormat(pattern = "HH:mm")
+    private LocalTime fin;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_version_langue")
@@ -65,7 +65,7 @@ public class Seance extends BaseEntity {
         return debut;
     }
 
-    public LocalDateTime getFin() {
+    public LocalTime getFin() {
         return fin;
     }
 
@@ -96,6 +96,27 @@ public class Seance extends BaseEntity {
             return "Non disponible";
         }
         return fin.format(DateTimeFormatter.ofPattern("HH:mm"));
+    }
+
+    public String getDebutFormatted() {
+        if (debut == null) {
+            return "";
+        }
+        return debut.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"));
+    }
+
+    public String getFinFormatted() {
+        if (fin == null) {
+            return "";
+        }
+        return fin.format(DateTimeFormatter.ofPattern("HH:mm"));
+    }
+
+    public String getDebutISO() {
+        if (debut == null) {
+            return "";
+        }
+        return debut.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
     }
 
     public Integer getPlacesDisponibles() {
@@ -132,7 +153,7 @@ public class Seance extends BaseEntity {
         this.debut = debut;
     }
 
-    public void setFin(LocalDateTime fin) {
+    public void setFin(LocalTime fin) {
         this.fin = fin;
     }
 

@@ -2,7 +2,7 @@
 -- TYPE DE PLACE
 -- ==============================
 CREATE TABLE type_place (
-  id SERIAL PRIMARY KEY,
+  id BIGSERIAL PRIMARY KEY,
   libelle TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ
@@ -12,7 +12,7 @@ CREATE TABLE type_place (
 -- CATEGORIE PERSONNE
 -- ==============================
 CREATE TABLE categorie_personne (
-  id SERIAL PRIMARY KEY,
+  id BIGSERIAL PRIMARY KEY,
   libelle TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ
@@ -22,7 +22,7 @@ CREATE TABLE categorie_personne (
 -- LANGUE
 -- ==============================
 CREATE TABLE langue (
-  id SERIAL PRIMARY KEY,
+  id BIGSERIAL PRIMARY KEY,
   code TEXT UNIQUE NOT NULL,
   libelle TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -33,11 +33,11 @@ CREATE TABLE langue (
 -- VERSION LINGUISTIQUE
 -- ==============================
 CREATE TABLE version_langue (
-  id SERIAL PRIMARY KEY,
+  id BIGSERIAL PRIMARY KEY,
   code TEXT UNIQUE NOT NULL,
   libelle TEXT NOT NULL,
-  id_langue_audio INT REFERENCES langue(id),
-  id_langue_sous_titre INT REFERENCES langue(id),
+  id_langue_audio BIGINT REFERENCES langue(id),
+  id_langue_sous_titre BIGINT REFERENCES langue(id),
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ
 );
@@ -46,13 +46,13 @@ CREATE TABLE version_langue (
 -- FILM
 -- ==============================
 CREATE TABLE film (
-  id SERIAL PRIMARY KEY,
+  id BIGSERIAL PRIMARY KEY,
   titre TEXT NOT NULL,
   description TEXT,
   duree_minutes INT,
   date_sortie DATE,
   age_min INT DEFAULT 0,
-  id_langue_originale INT REFERENCES langue(id),
+  id_langue_originale BIGINT REFERENCES langue(id),
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ
 );
@@ -61,15 +61,15 @@ CREATE TABLE film (
 -- GENRE
 -- ==============================
 CREATE TABLE genre (
-  id SERIAL PRIMARY KEY,
+  id BIGSERIAL PRIMARY KEY,
   libelle TEXT UNIQUE NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ
 );
 
 CREATE TABLE film_genre (
-  id_film INT REFERENCES film(id) ON DELETE CASCADE,
-  id_genre INT REFERENCES genre(id) ON DELETE CASCADE,
+  id_film BIGINT REFERENCES film(id) ON DELETE CASCADE,
+  id_genre BIGINT REFERENCES genre(id) ON DELETE CASCADE,
   PRIMARY KEY (id_film, id_genre)
 );
 
@@ -77,7 +77,7 @@ CREATE TABLE film_genre (
 -- SALLE
 -- ==============================
 CREATE TABLE salle (
-  id SERIAL PRIMARY KEY,
+  id BIGSERIAL PRIMARY KEY,
   nom TEXT NOT NULL,
   capacite INT NOT NULL CHECK (capacite > 0),
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -88,12 +88,12 @@ CREATE TABLE salle (
 -- PLACE
 -- ==============================
 CREATE TABLE place (
-  id SERIAL PRIMARY KEY,
-  id_salle INT REFERENCES salle(id) ON DELETE CASCADE,
+  id BIGSERIAL PRIMARY KEY,
+  id_salle BIGINT REFERENCES salle(id) ON DELETE CASCADE,
   rangee TEXT NOT NULL,
   numero INT NOT NULL,
   code_place TEXT,
-  id_type_place INT REFERENCES type_place(id),
+  id_type_place BIGINT REFERENCES type_place(id),
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ,
   UNIQUE (id_salle, rangee, numero)
@@ -103,12 +103,12 @@ CREATE TABLE place (
 -- SEANCE
 -- ==============================
 CREATE TABLE seance (
-  id SERIAL PRIMARY KEY,
-  id_film INT REFERENCES film(id),
-  id_salle INT REFERENCES salle(id),
+  id BIGSERIAL PRIMARY KEY,
+  id_film BIGINT REFERENCES film(id),
+  id_salle BIGINT REFERENCES salle(id),
   debut TIMESTAMPTZ NOT NULL,
   fin TIMESTAMPTZ,
-  id_version_langue INT REFERENCES version_langue(id),
+  id_version_langue BIGINT REFERENCES version_langue(id),
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ
 );
@@ -119,7 +119,7 @@ CREATE INDEX idx_seance_salle_debut ON seance(id_salle, debut);
 -- PERSONNE
 -- ==============================
 CREATE TABLE personne (
-  id SERIAL PRIMARY KEY,
+  id BIGSERIAL PRIMARY KEY,
   nom_complet TEXT,
   email TEXT UNIQUE,
   telephone TEXT,
@@ -131,7 +131,7 @@ CREATE TABLE personne (
 -- STATUS
 -- ==============================
 CREATE TABLE status (
-  id SERIAL PRIMARY KEY,
+  id BIGSERIAL PRIMARY KEY,
   code TEXT UNIQUE NOT NULL,
   libelle TEXT NOT NULL,
   valeur INT NOT NULL,
@@ -144,10 +144,10 @@ CREATE TABLE status (
 -- RESERVATION
 -- ==============================
 CREATE TABLE reservation (
-  id SERIAL PRIMARY KEY,
-  id_personne INT REFERENCES personne(id),
-  id_seance INT REFERENCES seance(id),
-  id_status INT REFERENCES status(id),
+  id BIGSERIAL PRIMARY KEY,
+  id_personne BIGINT REFERENCES personne(id),
+  id_seance BIGINT REFERENCES seance(id),
+  id_status BIGINT REFERENCES status(id),
   montant_total NUMERIC(6,2) DEFAULT 0,
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ
@@ -157,11 +157,11 @@ CREATE TABLE reservation (
 -- HISTORIQUE RESERVATION
 -- ==============================
 CREATE TABLE historique_statut_reservation (
-  id SERIAL PRIMARY KEY,
-  id_reservation INT REFERENCES reservation(id) ON DELETE CASCADE,
-  id_status INT REFERENCES status(id),
+  id BIGSERIAL PRIMARY KEY,
+  id_reservation BIGINT REFERENCES reservation(id) ON DELETE CASCADE,
+  id_status BIGINT REFERENCES status(id),
   date_changement TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  change_par INT REFERENCES personne(id),
+  change_par BIGINT REFERENCES personne(id),
   commentaire TEXT
 );
 
@@ -169,12 +169,12 @@ CREATE TABLE historique_statut_reservation (
 -- TICKET
 -- ==============================
 CREATE TABLE ticket (
-  id SERIAL PRIMARY KEY,
-  id_reservation INT REFERENCES reservation(id),
-  id_seance INT REFERENCES seance(id),
-  id_place INT REFERENCES place(id),
-  id_status INT REFERENCES status(id),
-  id_categorie_personne INT REFERENCES categorie_personne(id),
+  id BIGSERIAL PRIMARY KEY,
+  id_reservation BIGINT REFERENCES reservation(id),
+  id_seance BIGINT REFERENCES seance(id),
+  id_place BIGINT REFERENCES place(id),
+  id_status BIGINT REFERENCES status(id),
+  id_categorie_personne BIGINT REFERENCES categorie_personne(id),
   prix NUMERIC(6,2) NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ,
@@ -185,11 +185,11 @@ CREATE TABLE ticket (
 -- HISTORIQUE TICKET
 -- ==============================
 CREATE TABLE historique_statut_ticket (
-  id SERIAL PRIMARY KEY,
-  id_ticket INT REFERENCES ticket(id) ON DELETE CASCADE,
-  id_status INT REFERENCES status(id),
+  id BIGSERIAL PRIMARY KEY,
+  id_ticket BIGINT REFERENCES ticket(id) ON DELETE CASCADE,
+  id_status BIGINT REFERENCES status(id),
   date_changement TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  change_par INT REFERENCES personne(id),
+  change_par BIGINT REFERENCES personne(id),
   commentaire TEXT
 );
 
@@ -197,19 +197,19 @@ CREATE TABLE historique_statut_ticket (
 -- TARIFICATION
 -- ==============================
 CREATE TABLE tarif_defaut (
-  id SERIAL PRIMARY KEY,
-  id_type_place INT REFERENCES type_place(id),
-  id_categorie_personne INT REFERENCES categorie_personne(id),
+  id BIGSERIAL PRIMARY KEY,
+  id_type_place BIGINT REFERENCES type_place(id),
+  id_categorie_personne BIGINT REFERENCES categorie_personne(id),
   prix NUMERIC(6,2) NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ
 );
 
 CREATE TABLE tarif_seance (
-  id SERIAL PRIMARY KEY,
-  id_seance INT REFERENCES seance(id),
-  id_type_place INT REFERENCES type_place(id),
-  id_categorie_personne INT REFERENCES categorie_personne(id),
+  id BIGSERIAL PRIMARY KEY,
+  id_seance BIGINT REFERENCES seance(id),
+  id_type_place BIGINT REFERENCES type_place(id),
+  id_categorie_personne BIGINT REFERENCES categorie_personne(id),
   prix NUMERIC(6,2) NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ

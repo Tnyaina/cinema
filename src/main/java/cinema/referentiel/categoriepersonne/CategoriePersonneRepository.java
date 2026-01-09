@@ -13,5 +13,7 @@ public interface CategoriePersonneRepository extends JpaRepository<CategoriePers
     @Query("SELECT cp FROM CategoriePersonne cp WHERE cp.libelle = :libelle")
     Optional<CategoriePersonne> findByLibelle(@Param("libelle") String libelle);
     
+    Optional<CategoriePersonne> findByLibelleIgnoreCase(String libelle);
+    
     List<CategoriePersonne> findAll();
 }

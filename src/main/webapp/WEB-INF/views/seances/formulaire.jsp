@@ -7,7 +7,7 @@
 </div>
 
 <div class="form-container">
-    <form method="POST" action="<c:url value='/seances${empty seance.id ? "" : "/".concat(seance.id)}'/>" class="form-group">
+    <form method="POST" action="<c:url value='/seances${empty seance.id ? "" : "/".concat(seance.id)}'/>" class="form-group" onsubmit="return validateForm()">
         <div class="form-section">
             <div class="section-title">
                 <h3>Informations de base</h3>
@@ -53,7 +53,7 @@
                 <div class="form-field">
                     <label for="debut">Date et heure de début <span class="required">*</span></label>
                     <input type="datetime-local" id="debut" name="debut" class="form-control" 
-                           value="${not empty seance.debut ? seance.debut : ''}" required>
+                           value="${seance.debutFormatted}" required>
                     <small class="form-text text-muted">Format: JJ/MM/YYYY HH:mm</small>
                     <div id="conflictWarning" class="warning" style="display:none;">
                         ⚠️ Attention: Un chevauchement est détecté dans cette salle à cette heure
@@ -61,9 +61,9 @@
                 </div>
 
                 <div class="form-field">
-                    <label for="fin">Date et heure de fin <span class="required">*</span></label>
-                    <input type="datetime-local" id="fin" name="fin" class="form-control" 
-                           value="${not empty seance.fin ? seance.fin : ''}" required>
+                    <label for="fin">Heure de fin <span class="required">*</span></label>
+                    <input type="time" id="fin" name="fin" class="form-control" 
+                           value="${seance.finFormatted}" required>
                     <small class="form-text text-muted">Calculé automatiquement d'après la durée du film</small>
                 </div>
             </div>
@@ -94,6 +94,67 @@
                     </select>
                 </div>
             </div>
+        </div>
+
+        <!-- Section Tarification (optionnelle) -->
+        <div class="form-section">
+            <div class="section-title">
+                <h3>Tarification pour cette séance <span class="optional-badge">Optionnel</span></h3>
+                <p class="section-hint">Définissez des tarifs spécifiques pour cette séance. Si non définis, les tarifs par défaut seront utilisés.</p>
+            </div>
+
+            <div id="tarifificationContainer">
+                <c:if test="${not empty tarifs}">
+                    <!-- Afficher les tarifs existants -->
+                    <c:forEach var="tarif" items="${tarifs}" varStatus="status">
+                        <div class="tarif-row" data-tarif-id="${tarif.id}">
+                            <div class="tarif-row-content">
+                                <div class="form-row">
+                                    <div class="form-field">
+                                        <label>Type de place</label>
+                                        <select name="tarif_typePlace_${status.index}" class="form-control" onchange="updateTarifDisplay(${status.index})">
+                                            <option value="">-- Sélectionner --</option>
+                                            <c:forEach var="typePlace" items="${typePlaces}">
+                                                <option value="${typePlace.id}" <c:if test="${tarif.typePlace.id == typePlace.id}">selected</c:if>>
+                                                    ${typePlace.libelle}
+                                                </option>
+                                            </c:forEach>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-field">
+                                        <label>Catégorie personne</label>
+                                        <select name="tarif_categorie_${status.index}" class="form-control" onchange="updateTarifDisplay(${status.index})">
+                                            <option value="">-- Sélectionner --</option>
+                                            <c:forEach var="categorie" items="${categoriesPersonne}">
+                                                <option value="${categorie.id}" <c:if test="${tarif.categoriePersonne.id == categorie.id}">selected</c:if>>
+                                                    ${categorie.libelle}
+                                                </option>
+                                            </c:forEach>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-field">
+                                        <label>Prix (€)</label>
+                                        <input type="number" name="tarif_prix_${status.index}" class="form-control" step="0.01" min="0" 
+                                               value="${tarif.prix}" required>
+                                    </div>
+
+                                    <div class="form-field">
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="removeTarifRow(this)">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </c:forEach>
+                </c:if>
+            </div>
+
+            <button type="button" class="btn btn-sm btn-outline-primary" onclick="addTarifRow()" style="margin-top: 15px;">
+                <i class="fas fa-plus"></i> Ajouter un tarif
+            </button>
         </div>
 
         <div class="form-actions">
@@ -360,6 +421,70 @@
         color: #666;
         margin-top: 3px;
     }
+
+    /* Styles pour la tarification */
+    .optional-badge {
+        background-color: #e7f3ff;
+        color: #003d7a;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-left: 10px;
+        text-transform: uppercase;
+    }
+
+    .tarif-row {
+        background: #f8f9fa;
+        padding: 20px;
+        margin-bottom: 15px;
+        border-left: 4px solid #003d7a;
+        border-radius: 4px;
+    }
+
+    .tarif-row-content {
+        margin: 0;
+    }
+
+    .tarif-row .form-row {
+        grid-template-columns: 1.5fr 1.5fr 1fr 0.8fr;
+        gap: 15px;
+        align-items: flex-end;
+    }
+
+    .tarif-row .form-field label {
+        font-size: 13px;
+    }
+
+    .tarif-row .form-control {
+        font-size: 13px;
+        padding: 8px 12px;
+    }
+
+    .btn-outline-primary {
+        background-color: transparent;
+        color: #003d7a;
+        border: 2px solid #003d7a;
+    }
+
+    .btn-outline-primary:hover {
+        background-color: #003d7a;
+        color: white;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333;
+    }
+
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
 </style>
 
 <script>
@@ -381,8 +506,8 @@
         seancesParSalle[${seance.salle.id}].push({
             id: ${seance.id},
             filmTitre: '${seance.film.titre}',
-            debut: new Date('${seance.debut}'),
-            fin: new Date('${seance.fin}'),
+            debut: new Date('${seance.debutISO}'),
+            fin: '${seance.finFormatted}',
             dureeMinutes: ${seance.film.dureeMinutes}
         });
     </c:forEach>
@@ -429,15 +554,18 @@
             if (seancesParSalle[salleId]) {
                 seancesParSalle[salleId].forEach(seance => {
                     const seanceDebut = new Date(seance.debut);
-                    const seanceFin = new Date(seance.fin);
+                    // Construire seanceFin en ajoutant l'heure (string HH:mm) au jour de debut
+                    const [heures, minutes] = seance.fin.split(':');
+                    const seanceFin = new Date(seanceDebut);
+                    seanceFin.setHours(parseInt(heures), parseInt(minutes), 0);
                     
                     // Vérifier chevauchement : si fin > seanceDebut ET debut < seanceFin
                     const overlap = fin > seanceDebut && debut < seanceFin;
 
                     const liClass = overlap ? 'seance-item conflict' : 'seance-item';
                     html += `<div class="${liClass}">
-                        <div class="film-name">🎬 ${seance.filmTitre}</div>
-                        <div class="timing">${formatDate(seanceDebut)} → ${formatDate(seanceFin)}</div>
+                        <div class="film-name">🎬 \${seance.filmTitre}</div>
+                        <div class="timing">\${formatDate(seanceDebut)} → \${formatDate(seanceFin)}</div>
                     </div>`;
 
                     if (overlap) {
@@ -449,7 +577,13 @@
             }
 
             seancesContent.innerHTML = html;
-            seancesExistantes.style.display = 'block';
+            
+            // Afficher les séances existantes seulement s'il y en a dans la salle
+            if (seancesParSalle[salleId] && seancesParSalle[salleId].length > 0) {
+                seancesExistantes.style.display = 'block';
+            } else {
+                seancesExistantes.style.display = 'none';
+            }
             
             if (hasConflict) {
                 conflictWarning.style.display = 'block';
@@ -466,14 +600,11 @@
             const duree = filmsData[filmSelect.value].dureeMinutes || 120;
             const fin = new Date(debut.getTime() + duree * 60 * 1000);
 
-            // Convertir fin en format datetime-local
-            const year = fin.getFullYear();
-            const month = String(fin.getMonth() + 1).padStart(2, '0');
-            const day = String(fin.getDate()).padStart(2, '0');
+            // Convertir fin en format HH:mm pour input type="time"
             const hours = String(fin.getHours()).padStart(2, '0');
             const minutes = String(fin.getMinutes()).padStart(2, '0');
 
-            finInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+            finInput.value = `${hours}:${minutes}`;
             checkConflicts();
         });
 
@@ -484,13 +615,10 @@
                 const duree = filmsData[this.value].dureeMinutes || 120;
                 const fin = new Date(debut.getTime() + duree * 60 * 1000);
 
-                const year = fin.getFullYear();
-                const month = String(fin.getMonth() + 1).padStart(2, '0');
-                const day = String(fin.getDate()).padStart(2, '0');
                 const hours = String(fin.getHours()).padStart(2, '0');
                 const minutes = String(fin.getMinutes()).padStart(2, '0');
 
-                finInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+                finInput.value = `${hours}:${minutes}`;
             }
             checkConflicts();
         });
@@ -504,5 +632,130 @@
         if (debutInput.value && filmSelect.value && salleSelect.value) {
             checkConflicts();
         }
+        
+        // Toujours essayer de remplir fin si debut et film existent
+        if (debutInput.value && filmSelect.value) {
+            const debut = getDateFromInput(debutInput.value);
+            const duree = filmsData[filmSelect.value]?.dureeMinutes || 120;
+            const fin = new Date(debut.getTime() + duree * 60 * 1000);
+            const hours = String(fin.getHours()).padStart(2, '0');
+            const minutes = String(fin.getMinutes()).padStart(2, '0');
+            finInput.value = `${hours}:${minutes}`;
+        }
+
+        // Valider avant soumission
+        document.querySelector('form').addEventListener('submit', function(e) {
+            if (!finInput.value || !debutInput.value) {
+                alert('Veuillez définir une date/heure de début et de fin valide');
+                e.preventDefault();
+            }
+        });
     });
+
+    // ===== GESTION DE LA TARIFICATION =====
+    let tarifRowCount = document.querySelectorAll('.tarif-row').length;
+
+    function addTarifRow() {
+        const container = document.getElementById('tarifificationContainer');
+        const currentIndex = tarifRowCount;
+        
+        // Créer le div principal
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'tarif-row';
+        rowDiv.setAttribute('data-tarif-index', currentIndex);
+        
+        // Construire le HTML avec concaténation pour éviter les problèmes JSP
+        let html = '<div class="tarif-row-content"><div class="form-row">';
+        
+        // Type de place
+        html += '<div class="form-field">';
+        html += '<label>Type de place</label>';
+        html += '<select name="tarif_typePlace_' + currentIndex + '" class="form-control" onchange="updateTarifDisplay(' + currentIndex + ')">';
+        html += '<option value="">-- Sélectionner --</option>';
+        <c:forEach var="typePlace" items="${typePlaces}">
+        html += '<option value="${typePlace.id}">${typePlace.libelle}</option>';
+        </c:forEach>
+        html += '</select></div>';
+        
+        // Catégorie personne
+        html += '<div class="form-field">';
+        html += '<label>Catégorie personne</label>';
+        html += '<select name="tarif_categorie_' + currentIndex + '" class="form-control" onchange="updateTarifDisplay(' + currentIndex + ')">';
+        html += '<option value="">-- Sélectionner --</option>';
+        <c:forEach var="categorie" items="${categoriesPersonne}">
+        html += '<option value="${categorie.id}">${categorie.libelle}</option>';
+        </c:forEach>
+        html += '</select></div>';
+        
+        // Prix
+        html += '<div class="form-field">';
+        html += '<label>Prix (€)</label>';
+        html += '<input type="number" name="tarif_prix_' + currentIndex + '" class="form-control" step="0.01" min="0" required>';
+        html += '</div>';
+        
+        // Bouton supprimer
+        html += '<div class="form-field">';
+        html += '<button type="button" class="btn btn-sm btn-danger" onclick="removeTarifRow(this)">';
+        html += '<i class="fas fa-trash"></i> Supprimer';
+        html += '</button></div>';
+        
+        html += '</div></div>';
+        
+        rowDiv.innerHTML = html;
+        container.appendChild(rowDiv);
+        tarifRowCount++;
+    }
+
+    function removeTarifRow(button) {
+        const row = button.closest('.tarif-row');
+        if (row) {
+            row.remove();
+        }
+    }
+
+    function updateTarifDisplay(index) {
+        // Fonction pour mettre à jour dynamiquement si nécessaire
+        // À développer selon les besoins
+    }
+
+    // Fonction de validation du formulaire
+    function validateForm() {
+        const debutInput = document.getElementById('debut');
+        const finInput = document.getElementById('fin');
+        const filmSelect = document.getElementById('filmSelect');
+
+        // Vérifier que debut est rempli
+        if (!debutInput.value) {
+            alert('Veuillez sélectionner une date et heure de début');
+            return false;
+        }
+
+        // Vérifier que fin est rempli
+        if (!finInput.value) {
+            // Essayer de la calculer automatiquement
+            if (filmSelect.value) {
+                const filmsData = {};
+                // Récupérer les données des films depuis le formulaire
+                const filmOptions = filmSelect.options;
+                for (let i = 0; i < filmOptions.length; i++) {
+                    const duration = filmOptions[i].getAttribute('data-duration');
+                    if (duration) {
+                        filmsData[filmOptions[i].value] = { dureeMinutes: parseInt(duration) };
+                    }
+                }
+
+                const debut = new Date(debutInput.value);
+                const duree = filmsData[filmSelect.value]?.dureeMinutes || 120;
+                const fin = new Date(debut.getTime() + duree * 60 * 1000);
+                const hours = String(fin.getHours()).padStart(2, '0');
+                const minutes = String(fin.getMinutes()).padStart(2, '0');
+                finInput.value = `${hours}:${minutes}`;
+            } else {
+                alert('Veuillez sélectionner un film et une heure de fin');
+                return false;
+            }
+        }
+
+        return true;
+    }
 </script>

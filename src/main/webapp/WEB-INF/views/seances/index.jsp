@@ -39,7 +39,12 @@
             </select>
         </div>
 
-        <c:if test="${not empty param.film || not empty param.salle}">
+        <div class="filter-group">
+            <label for="date">Date</label>
+            <input type="date" id="date" name="date" class="form-control" value="${selectedDate}" onchange="this.form.submit()">
+        </div>
+
+        <c:if test="${not empty param.film || not empty param.salle || not empty param.date}">
             <a href="<c:url value='/seances'/>" class="btn btn-outline-secondary">
                 <i class="fas fa-redo-alt"></i> Réinitialiser
             </a>

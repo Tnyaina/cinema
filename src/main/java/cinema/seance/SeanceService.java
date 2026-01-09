@@ -11,6 +11,8 @@ import cinema.referentiel.versionlangue.VersionLangue;
 import cinema.referentiel.versionlangue.VersionLangueRepository;
 import cinema.ticket.TicketRepository;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -150,5 +152,24 @@ public class SeanceService {
     public VersionLangue obtenirVersionLangueById(Long versionLangueId) {
         return versionLangueRepository.findById(versionLangueId)
             .orElseThrow(() -> new RuntimeException("Version langue non trouvée avec l'ID: " + versionLangueId));
+    }
+
+    /**
+     * Filtrer les séances par date
+     */
+    @Transactional(readOnly = true)
+    public List<Seance> filtrerSeancesParDate(List<Seance> seances, String dateStr) {
+        try {
+            LocalDate dateFiltre = LocalDate.parse(dateStr);
+            return seances.stream()
+                .filter(seance -> {
+                    LocalDate seanceDate = seance.getDebut().toLocalDate();
+                    return seanceDate.equals(dateFiltre);
+                })
+                .collect(Collectors.toList());
+        } catch (Exception e) {
+            // Si le parsing échoue, retourner toutes les séances
+            return seances;
+        }
     }
 }
