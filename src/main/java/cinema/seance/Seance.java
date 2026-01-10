@@ -178,6 +178,11 @@ public class Seance extends BaseEntity {
         if (debut == null) {
             return false;
         }
+
+        if( statut == null || !statut.equals("Disponible")) {
+            return false;
+        }
+        
         return debut.isAfter(LocalDateTime.now());
     }
 }

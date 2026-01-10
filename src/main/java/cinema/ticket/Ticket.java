@@ -9,9 +9,7 @@ import cinema.referentiel.status.Status;
 import cinema.referentiel.categoriepersonne.CategoriePersonne;
 
 @Entity
-@Table(name = "ticket", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"id_seance", "id_place"})
-})
+@Table(name = "ticket")
 public class Ticket extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
