@@ -79,7 +79,8 @@ public class SeanceController {
         List<Place> placesReservees = placeService.obtenirPlacesReserveesBySeance(id, salleId);
         Map<String, List<Place>> placesParRangee = placeService.obtenirPlacesGroupeesParRangee(salleId);
         
-        Map<Long, Double> prixParTypePlace = new HashMap<>();
+        // Récupérer catégories de personne
+        List<CategoriePersonne> categoriesPersonne = categoriePersonneRepository.findAll();
         
         // Récupérer les types de places PRÉSENTS dans la salle
         java.util.Set<Long> typePlaceIds = new java.util.HashSet<>();
@@ -89,66 +90,44 @@ public class SeanceController {
             }
         }
         
-        // Créer une liste de tarifs à afficher (mélange tarifs seance + tarifs défaut)
-        List<Map<String, Object>> tarifsPourAffichage = new ArrayList<>();
+        // Créer une structure pour les tarifs: typePlace -> categorie -> prix
+        // Utilisée pour afficher la grille de tarifs
+        Map<String, Map<String, Double>> tarifsCombines = new HashMap<>();
         
         for (Long typePlaceId : typePlaceIds) {
             TypePlace typePlace = typePlaceRepository.findById(typePlaceId).orElse(null);
             if (typePlace == null) continue;
             
-            // D'abord chercher un tarif de séance
-            var tarifSeanceOptional = tarifSeanceRepository.findBySeanceIdAndTypePlaceId(id, typePlace.getId());
+            Map<String, Double> tarifsPourType = new HashMap<>();
             
-            if (tarifSeanceOptional.isPresent()) {
-                // Si un tarif de séance existe, l'utiliser
-                TarifSeance tarif = tarifSeanceOptional.get();
-                prixParTypePlace.put(typePlace.getId(), tarif.getPrix());
+            // Pour chaque catégorie de personne
+            for (CategoriePersonne cat : categoriesPersonne) {
+                Double prixFinal = null;
                 
-                // Ajouter à la liste d'affichage
-                Map<String, Object> tarifMap = new HashMap<>();
-                tarifMap.put("typePlace", tarif.getTypePlace());
-                tarifMap.put("prix", tarif.getPrix());
-                tarifsPourAffichage.add(tarifMap);
-            } else {
-                // Sinon, chercher un tarif défaut par type de place
-                // D'abord, essayer avec la catégorie personne id=1 (catégorie par défaut)
-                var tarifDefautOptional = tarifDefautRepository.findByTypePlaceIdAndCategoriePersonneId(
-                    typePlace.getId(),
-                    1L // Catégorie personne par défaut (id=1)
-                );
+                // D'abord chercher en tarif_seance
+                var tarifSeanceOptional = tarifSeanceRepository
+                    .findBySeanceIdAndTypePlaceIdAndCategoriePersonneId(id, typePlace.getId(), cat.getId());
                 
-                if (tarifDefautOptional.isPresent()) {
-                    TarifDefaut tarifDéfaut = tarifDefautOptional.get();
-                    prixParTypePlace.put(typePlace.getId(), tarifDéfaut.getPrix());
-                    
-                    // Ajouter à la liste d'affichage
-                    Map<String, Object> tarifMap = new HashMap<>();
-                    tarifMap.put("typePlace", tarifDéfaut.getTypePlace());
-                    tarifMap.put("prix", tarifDéfaut.getPrix());
-                    tarifsPourAffichage.add(tarifMap);
+                if (tarifSeanceOptional.isPresent()) {
+                    prixFinal = tarifSeanceOptional.get().getPrix();
                 } else {
-                    // Si pas de tarif défaut avec catégorie 1, chercher le premier disponible
-                    List<TarifDefaut> tarifsDéfaut = tarifDefautRepository.findByTypePlaceId(typePlace.getId());
-                    if (!tarifsDéfaut.isEmpty()) {
-                        TarifDefaut tarifDéfaut = tarifsDéfaut.get(0);
-                        prixParTypePlace.put(typePlace.getId(), tarifDéfaut.getPrix());
-                        
-                        // Ajouter à la liste d'affichage
-                        Map<String, Object> tarifMap = new HashMap<>();
-                        tarifMap.put("typePlace", tarifDéfaut.getTypePlace());
-                        tarifMap.put("prix", tarifDéfaut.getPrix());
-                        tarifsPourAffichage.add(tarifMap);
+                    // Sinon chercher en tarif_defaut
+                    var tarifDefautOptional = tarifDefautRepository
+                        .findByTypePlaceIdAndCategoriePersonneId(typePlace.getId(), cat.getId());
+                    
+                    if (tarifDefautOptional.isPresent()) {
+                        prixFinal = tarifDefautOptional.get().getPrix();
+                    } else {
+                        // Fallback: 12.0€
+                        prixFinal = 12.0;
                     }
                 }
+                
+                tarifsPourType.put(cat.getLibelle(), prixFinal);
             }
+            
+            tarifsCombines.put(typePlace.getLibelle(), tarifsPourType);
         }
-        
-        // Trier les tarifs par nom du type de place pour un affichage cohérent
-        tarifsPourAffichage.sort((t1, t2) -> {
-            String lib1 = ((TypePlace) t1.get("typePlace")).getLibelle();
-            String lib2 = ((TypePlace) t2.get("typePlace")).getLibelle();
-            return lib1.compareTo(lib2);
-        });
         
         Map<String, List<Place>> placesParType = new HashMap<>();
         for (Place place : toutesLesPlaces) {
@@ -164,12 +143,12 @@ public class SeanceController {
         model.addAttribute("seance", seance);
         model.addAttribute("placesParRangee", placesParRangee);
         model.addAttribute("placesParType", placesParType);
-        model.addAttribute("prixParTypePlace", prixParTypePlace);
         model.addAttribute("placesReservees", placesReservees);
         model.addAttribute("placesDisponibles", placesDisponibles);
         model.addAttribute("placesDispoCount", placesDispoCount);
         model.addAttribute("placesReserveeCount", placesReserveeCount);
-        model.addAttribute("tarifs", tarifsPourAffichage);
+        model.addAttribute("categoriesPersonne", categoriesPersonne);
+        model.addAttribute("tarifsCombines", tarifsCombines);
         model.addAttribute("tauxOccupation", String.format("%.0f", tauxOccupation));
         model.addAttribute("totalPlaces", toutesLesPlaces.size());
         model.addAttribute("chiffresAffaires", chiffresAffaires);
@@ -320,6 +299,17 @@ public class SeanceController {
         model.addAttribute("pageTitle", "Supprimer: " + seance.getFilm().getTitre());
         model.addAttribute("pageActive", "seances");
         return "layout";
+    }
+
+    @PostMapping("/{id}/terminer")
+    public String terminerSeance(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            seanceService.terminerSeance(id);
+            redirectAttributes.addFlashAttribute("success", "La seance a ete marquee comme terminee");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Erreur lors de la fermeture de la seance: " + e.getMessage());
+        }
+        return "redirect:/seances/" + id;
     }
 
     @PostMapping("/{id}/supprimer")

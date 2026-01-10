@@ -51,6 +51,15 @@ public class SeanceService {
         seanceRepository.deleteById(id);
     }
 
+    /**
+     * Marquer une séance comme terminée
+     */
+    public Seance terminerSeance(Long id) {
+        Seance seance = obtenirSeanceById(id);
+        seance.setStatut("Terminee");
+        return seanceRepository.save(seance);
+    }
+
     @Transactional(readOnly = true)
     public Seance obtenirSeanceById(Long id) {
         return seanceRepository.findById(id)

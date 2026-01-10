@@ -216,14 +216,20 @@ CREATE TABLE tarif_seance (
 );
 
 INSERT INTO status (code, libelle, valeur, est_final) VALUES
+-- Réservation
 ('CREE','Cree',1,false),
-('EN_ATTENTE','En attente',11,false),
-('PAYE','Paye',21,false),
 ('CONFIRMEE','Confirmee',31,false),
 ('ANNULEE','Annulee',100,true),
 ('EXPIREE','Expiree',101,true),
+-- Paiement (futur)
+('EN_ATTENTE','En attente',11,false),
+('PAYE','Paye',21,false),
+-- Tickets
+('RESERVEE','Reservee',12,false),
+('VALIDEE','Validee',40,false),
+-- Séance
 ('DISPONIBLE','Disponible',2,false),
-('RESERVEE','Reservee',12,false);
+('UTILISEE','Utilisee',41,true);
 
 INSERT INTO categorie_personne (libelle) VALUES
 ('ADULTE'),('ENFANT'),('SENIOR');

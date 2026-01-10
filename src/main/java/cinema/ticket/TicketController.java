@@ -5,14 +5,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import cinema.seance.SeanceService;
-import cinema.place.PlaceService;
-import cinema.tarif.TarifSeanceRepository;
-import cinema.tarif.TarifDefautRepository;
-import cinema.referentiel.categoriepersonne.CategoriePersonneRepository;
-import cinema.shared.StatusRepository;
-import cinema.client.ClientService;
-import cinema.reservation.ReservationService;
+import cinema.reservation.ReservationCreationService;
+import cinema.reservation.ReservationCreationService.PlaceSelection;
+import cinema.reservation.ReservationCreationService.ReservationCreationResult;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -23,13 +20,7 @@ public class TicketController {
 
     private final TicketService ticketService;
     private final SeanceService seanceService;
-    private final PlaceService placeService;
-    private final TarifSeanceRepository tarifSeanceRepository;
-    private final TarifDefautRepository tarifDefautRepository;
-    private final CategoriePersonneRepository categoriePersonneRepository;
-    private final StatusRepository statusRepository;
-    private final ClientService clientService;
-    private final ReservationService reservationService;
+    private final ReservationCreationService reservationCreationService;
 
     @GetMapping
     public String listerTickets(Model model) {
@@ -69,107 +60,63 @@ public class TicketController {
     public String acheterTickets(
             @RequestParam Long seanceId,
             @RequestParam(required = false) List<Long> placeIds,
+            @RequestParam(required = false) List<Long> categorieIds,
             @RequestParam(required = false) String nomComplet,
             @RequestParam(required = false) String email,
             @RequestParam(required = false) String telephone,
             RedirectAttributes redirectAttributes) {
         
         try {
-            // Valider que des places sont sélectionnées
+            // Valider les entrées
+            if (nomComplet == null || nomComplet.trim().isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", "Le nom est requis");
+                return "redirect:/seances/" + seanceId;
+            }
+            
             if (placeIds == null || placeIds.isEmpty()) {
                 redirectAttributes.addFlashAttribute("error", "Veuillez sélectionner au moins une place");
                 return "redirect:/seances/" + seanceId;
             }
-
-            // Valider les infos du client
-            if (nomComplet == null || nomComplet.trim().isEmpty()) {
-                redirectAttributes.addFlashAttribute("error", "Le nom est requis");
+            
+            if (categorieIds == null || categorieIds.size() != placeIds.size()) {
+                redirectAttributes.addFlashAttribute("error", "Données invalides: nombre de places et catégories incohérent");
                 return "redirect:/seances/" + seanceId;
             }
             
             // Obtenir la séance
             var seance = seanceService.obtenirSeanceById(seanceId);
             
-            // Obtenir ou créer le Client
-            var client = clientService.obtenirOuCreerClient(nomComplet, email, telephone);
-            
-            // Obtenir le status CREE pour la réservation
-            var statusCree = statusRepository.findByCode("CREE")
-                .orElseThrow(() -> new RuntimeException("Status CREE non trouvé"));
-            
-            // Créer la Réservation
-            var reservation = new cinema.reservation.Reservation();
-            reservation.setPersonne(client);
-            reservation.setSeance(seance);
-            reservation.setStatus(statusCree);
-            reservation.setMontantTotal(0.0);
-            
-            // SAUVEGARDER la réservation AVANT de créer les tickets
-            reservationService.creerReservation(reservation);
-            
-            // Obtenir la catégorie personne par défaut (ADULTE)
-            var categoriePersonne = categoriePersonneRepository.findByLibelle("ADULTE")
-                .orElseThrow(() -> new RuntimeException("Catégorie ADULTE non trouvée"));
-            
-            // Obtenir le status RESERVEE pour les tickets
-            var statusReservee = statusRepository.findByCode("RESERVEE")
-                .orElseThrow(() -> new RuntimeException("Status RESERVEE non trouvé"));
-            
-            Double prixTotal = 0.0;
-            int compteur = 0;
-            
-            // Créer un ticket pour chaque place sélectionnée
-            for (Long placeId : placeIds) {
-                var place = placeService.obtenirPlaceById(placeId);
-                
-                // Vérifier que la place n'est pas déjà réservée
-                if (!placeService.isPlaceDisponibleForSeance(seanceId, placeId)) {
-                    redirectAttributes.addFlashAttribute("error", 
-                        "La place " + place.getRangee() + place.getNumero() + " est déjà réservée");
-                    return "redirect:/seances/" + seanceId;
-                }
-                
-                // Obtenir le prix pour ce type de place
-                // D'abord chercher dans les tarifs de séance
-                var tarifSeanceOptional = tarifSeanceRepository.findBySeanceIdAndTypePlaceId(seanceId, place.getTypePlace().getId());
-                
-                Double prix;
-                if (tarifSeanceOptional.isPresent()) {
-                    // Si un tarif de séance existe, l'utiliser
-                    prix = tarifSeanceOptional.get().getPrix();
-                } else {
-                    // Sinon, chercher dans les tarifs défaut
-                    var tarifDefautOptional = tarifDefautRepository.findByTypePlaceIdAndCategoriePersonneId(
-                        place.getTypePlace().getId(),
-                        categoriePersonne.getId()
-                    );
-                    prix = tarifDefautOptional.map(t -> t.getPrix()).orElse(12.0); // Prix par défaut
-                }
-                
-                // Créer le ticket avec la réservation déjà persistée
-                Ticket ticket = new Ticket();
-                ticket.setReservation(reservation);
-                ticket.setSeance(seance);
-                ticket.setPlace(place);
-                ticket.setStatus(statusReservee);
-                ticket.setCategoriePersonne(categoriePersonne);
-                ticket.setPrix(prix);
-                
-                ticketService.creerTicket(ticket);
-                prixTotal += prix;
-                compteur++;
+            // Construire la liste des sélections de places
+            List<PlaceSelection> placesSelection = new ArrayList<>();
+            for (int i = 0; i < placeIds.size(); i++) {
+                placesSelection.add(new PlaceSelection(placeIds.get(i), categorieIds.get(i)));
             }
-
-            // Mettre à jour le montant total de la réservation
-            reservation.setMontantTotal(prixTotal);
-            reservationService.creerReservation(reservation);
             
-            redirectAttributes.addFlashAttribute("success", 
-                compteur + " ticket(s) réservé(s) avec succès! Réservation #" + reservation.getId() + " - Total: " + String.format("%.2f", prixTotal) + " €");
+            // Créer la réservation avec les tickets en une transaction atomique
+            ReservationCreationResult result = reservationCreationService.creerReservationAvecTickets(
+                seance,
+                nomComplet.trim(),
+                email,
+                telephone,
+                placesSelection
+            );
+            
+            redirectAttributes.addFlashAttribute("success",
+                result.getNombreTickets() + " ticket(s) réservé(s) avec succès! " +
+                "Réservation #" + result.getReservation().getId() + " - " +
+                "Total: " + String.format("%.2f", result.getMontantTotal()) + " €");
+            
             return "redirect:/seances/" + seanceId;
             
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/seances/" + seanceId;
+        } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/seances/" + seanceId;
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Erreur lors de la création des tickets: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", 
+                "Erreur lors de la création de la réservation: " + e.getMessage());
             return "redirect:/seances/" + seanceId;
         }
     }

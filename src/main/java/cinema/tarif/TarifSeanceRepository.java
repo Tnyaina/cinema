@@ -20,6 +20,13 @@ public interface TarifSeanceRepository extends JpaRepository<TarifSeance, Long> 
         @Param("typePlaceId") Long typePlaceId
     );
     
+    @Query("SELECT t FROM TarifSeance t WHERE t.seance.id = :seanceId AND t.typePlace.id = :typePlaceId AND t.categoriePersonne.id = :categoriePersonneId")
+    Optional<TarifSeance> findBySeanceIdAndTypePlaceIdAndCategoriePersonneId(
+        @Param("seanceId") Long seanceId,
+        @Param("typePlaceId") Long typePlaceId,
+        @Param("categoriePersonneId") Long categoriePersonneId
+    );
+    
     @Query("SELECT t FROM TarifSeance t WHERE t.seance.id = :seanceId AND t.categoriePersonne.id = :categoriePersonneId")
     List<TarifSeance> findBySeanceIdAndCategoriePersonneId(
         @Param("seanceId") Long seanceId,
