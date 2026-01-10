@@ -3,6 +3,9 @@ package cinema.ticket;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import cinema.shared.StatusRepository;
+import cinema.historique.HistoriqueStatutTicket;
+import cinema.historique.HistoriqueStatutTicketRepository;
 import java.util.List;
 
 @Service
@@ -11,6 +14,8 @@ import java.util.List;
 public class TicketService {
 
     private final TicketRepository ticketRepository;
+    private final StatusRepository statusRepository;
+    private final HistoriqueStatutTicketRepository historiqueTicketRepository;
 
     public Ticket creerTicket(Ticket ticket) {
         if (!ticket.estValide()) {
@@ -35,6 +40,51 @@ public class TicketService {
 
     public void supprimerTicket(Long id) {
         ticketRepository.deleteById(id);
+    }
+
+    /**
+     * Annuler un ticket : marquer comme ANNULEE et recalculer montant reservation
+     */
+    public Ticket annulerTicket(Long id) {
+        Ticket ticket = obtenirTicketById(id);
+        
+        // Marquer le ticket comme ANNULEE
+        var statusAnnulee = statusRepository.findByCode("ANNULEE")
+            .orElseThrow(() -> new RuntimeException("Status ANNULEE non trouve"));
+        ticket.setStatus(statusAnnulee);
+        
+        Ticket ticketAnnule = ticketRepository.save(ticket);
+        
+        // Enregistrer dans l'historique
+        enregistrerHistoriqueTicket(ticketAnnule, "ANNULEE");
+        
+        // Recalculer le montant total de la reservation
+        if (ticket.getReservation() != null) {
+            var reservation = ticket.getReservation();
+            Double nouveauMontant = ticketRepository.findByReservationId(reservation.getId())
+                .stream()
+                .filter(t -> !t.getStatus().getCode().equals("ANNULEE"))
+                .mapToDouble(Ticket::getPrix)
+                .sum();
+            reservation.setMontantTotal(nouveauMontant);
+        }
+        
+        return ticketAnnule;
+    }
+
+    /**
+     * Enregistrer dans l'historique statut du ticket
+     */
+    private void enregistrerHistoriqueTicket(Ticket ticket, String codeStatus) {
+        var status = statusRepository.findByCode(codeStatus)
+            .orElseThrow(() -> new RuntimeException("Status " + codeStatus + " non trouve"));
+
+        HistoriqueStatutTicket historique = new HistoriqueStatutTicket();
+        historique.setTicket(ticket);
+        historique.setStatus(status);
+        historique.setCommentaire("Ticket annule");
+
+        historiqueTicketRepository.save(historique);
     }
 
     @Transactional(readOnly = true)

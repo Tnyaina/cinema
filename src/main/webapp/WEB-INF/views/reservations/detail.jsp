@@ -120,12 +120,13 @@
                         <thead>
                             <tr>
                                 <th><i class="fas fa-hashtag"></i> ID Ticket</th>
-                                <th><i class="fas fa-chair"></i> Rangée</th>
-                                <th><i class="fas fa-chair"></i> Numéro</th>
+                                <th><i class="fas fa-chair"></i> Rangee</th>
+                                <th><i class="fas fa-chair"></i> Numero</th>
                                 <th><i class="fas fa-tag"></i> Type</th>
-                                <th><i class="fas fa-user-tag"></i> Catégorie</th>
+                                <th><i class="fas fa-user-tag"></i> Categorie</th>
                                 <th><i class="fas fa-money-bill-wave"></i> Prix</th>
                                 <th><i class="fas fa-check-circle"></i> Statut</th>
+                                <th><i class="fas fa-cog"></i> Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -168,6 +169,15 @@
                                             ${ticket.status.libelle}
                                         </span>
                                     </td>
+                                    <c:if test="${ticket.status.code != 'ANNULEE'}">
+                                        <td>
+                                            <form method="POST" action="<c:url value='/tickets/${ticket.id}/annuler'/>" style="display: inline;">
+                                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Etes-vous sur de vouloir annuler ce ticket ?');">
+                                                    <i class="fas fa-times"></i> Annuler
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </c:if>
                                 </tr>
                             </c:forEach>
                         </tbody>
@@ -192,12 +202,14 @@
     <!-- Actions -->
     <div class="actions-footer">
         <a href="<c:url value='/reservations'/>" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Retour à la liste
+            <i class="fas fa-arrow-left"></i> Retour a la liste
         </a>
         <c:if test="${reservation.status.code == 'CREE'}">
-            <button class="btn btn-danger" onclick="if(confirm('Êtes-vous sûr de vouloir annuler cette réservation ?')) { /* TODO: implémentation annulation */ }">
-                <i class="fas fa-times"></i> Annuler la réservation
-            </button>
+            <form method="POST" action="<c:url value='/reservations/${reservation.id}/annuler'/>" style="display: inline;">
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Etes-vous sur de vouloir annuler cette reservation ? Tous les tickets seront annules.');">
+                    <i class="fas fa-times"></i> Annuler la reservation
+                </button>
+            </form>
         </c:if>
     </div>
 </div>

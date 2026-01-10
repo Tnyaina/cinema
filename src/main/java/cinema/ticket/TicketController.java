@@ -135,7 +135,21 @@ public class TicketController {
 
     @PostMapping("/{id}/supprimer")
     public String supprimerTicket(@PathVariable Long id) {
-        // À implémenter
+        // A implementer
         return "redirect:/tickets";
+    }
+
+    @PostMapping("/{id}/annuler")
+    public String annulerTicket(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            var ticket = ticketService.obtenirTicketById(id);
+            var reservationId = ticket.getReservation().getId();
+            ticketService.annulerTicket(id);
+            redirectAttributes.addFlashAttribute("success", "Le ticket a ete annule");
+            return "redirect:/reservations/" + reservationId;
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Erreur lors de l'annulation du ticket: " + e.getMessage());
+            return "redirect:/tickets";
+        }
     }
 }

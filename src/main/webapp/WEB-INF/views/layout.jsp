@@ -84,10 +84,6 @@
                         <i class="fas fa-receipt"></i>
                         <span>Tickets</span>
                     </a>
-                    <a href="<c:url value='/nouvelle-reservation'/>" class="nav-item ${pageActive == 'nouvelleReservation' ? 'active' : ''}">
-                        <i class="fas fa-plus-circle"></i>
-                        <span>Nouvelle réservation</span>
-                    </a>
                 </div>
 
                 <!-- CLIENTS -->
