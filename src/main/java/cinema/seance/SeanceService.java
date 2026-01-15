@@ -10,10 +10,13 @@ import cinema.salle.SalleRepository;
 import cinema.referentiel.versionlangue.VersionLangue;
 import cinema.referentiel.versionlangue.VersionLangueRepository;
 import cinema.ticket.TicketRepository;
-import java.time.LocalDateTime;
+import cinema.place.PlaceRepository;
+import cinema.tarif.TarifSeanceRepository;
+import cinema.tarif.TarifDefautRepository;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +29,9 @@ public class SeanceService {
     private final SalleRepository salleRepository;
     private final VersionLangueRepository versionLangueRepository;
     private final TicketRepository ticketRepository;
+    private final PlaceRepository placeRepository;
+    private final TarifSeanceRepository tarifSeanceRepository;
+    private final TarifDefautRepository tarifDefautRepository;
 
     public Seance creerSeance(Seance seance) {
         if (!seance.estValide()) {
@@ -180,5 +186,76 @@ public class SeanceService {
             // Si le parsing échoue, retourner toutes les séances
             return seances;
         }
+    }
+
+    /**
+     * Calculer la valeur maximale qu'une salle peut générer pour une séance
+     * 
+     * Logique:
+     * - Pour chaque type de place dans la salle, compter le nombre de places
+     * - Pour chaque type, trouver le tarif maximal (la catégorie de personne la plus chère)
+     * - Chercher d'abord dans tarif_seance, sinon utiliser tarif_defaut
+     * - Multiplier nombre de places * tarif maximal pour chaque type
+     * - Additionner tous les types
+     */
+    @Transactional(readOnly = true)
+    public Double calculerRevenuMaximumSeance(Long seanceId) {
+        Seance seance = seanceRepository.findById(seanceId)
+            .orElseThrow(() -> new RuntimeException("Séance non trouvée"));
+        
+        Long salleId = seance.getSalle().getId();
+        List<cinema.place.Place> toutesLesPlaces = placeRepository.findBySalleId(salleId);
+        
+        // Grouper les places par type
+        Map<Long, Long> placesParType = new HashMap<>();
+        for (cinema.place.Place place : toutesLesPlaces) {
+            Long typeId = place.getTypePlace() != null ? place.getTypePlace().getId() : null;
+            if (typeId != null) {
+                placesParType.put(typeId, placesParType.getOrDefault(typeId, 0L) + 1);
+            }
+        }
+        
+        Double revenuTotal = 0.0;
+        
+        // Pour chaque type de place
+        for (Map.Entry<Long, Long> entry : placesParType.entrySet()) {
+            Long typePlaceId = entry.getKey();
+            Long nombrePlaces = entry.getValue();
+            
+            // Trouver le tarif maximal pour ce type (tous catégories confondues)
+            Double prixMax = 0.0;
+            
+            // D'abord chercher dans tarif_seance - récupérer TOUS les tarifs de ce type
+            List<cinema.tarif.TarifSeance> tarifs = tarifSeanceRepository
+                .findBySeanceIdAndCategoriePersonneId(seanceId, null); // Tous les tarifs de la séance
+            
+            // Filtrer pour ce type de place
+            List<cinema.tarif.TarifSeance> tarifsDuType = tarifs.stream()
+                .filter(t -> t.getTypePlace().getId().equals(typePlaceId))
+                .collect(Collectors.toList());
+            
+            if (!tarifsDuType.isEmpty()) {
+                prixMax = tarifsDuType.stream()
+                    .mapToDouble(cinema.tarif.TarifSeance::getPrix)
+                    .max()
+                    .orElse(0.0);
+            } else {
+                // Sinon chercher dans tarif_defaut
+                List<cinema.tarif.TarifDefaut> tarifDefauts = tarifDefautRepository
+                    .findByTypePlaceId(typePlaceId);
+                if (!tarifDefauts.isEmpty()) {
+                    prixMax = tarifDefauts.stream()
+                        .mapToDouble(cinema.tarif.TarifDefaut::getPrix)
+                        .max()
+                        .orElse(12.0);
+                } else {
+                    prixMax = 12.0; // Fallback
+                }
+            }
+            
+            revenuTotal += nombrePlaces * prixMax;
+        }
+        
+        return revenuTotal;
     }
 }

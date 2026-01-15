@@ -41,7 +41,7 @@
         </div>
         <div class="preview-item">
             <span class="label">Prix:</span>
-            <span class="value">${tarifDefaut.prix} €</span>
+            <span class="value">${tarifDefaut.prix} Ar</span>
         </div>
     </div>
 

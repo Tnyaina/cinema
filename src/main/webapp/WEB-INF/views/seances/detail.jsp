@@ -79,8 +79,12 @@
                 <div class="stat-label">Taux d'occupation</div>
             </div>
             <div class="stat">
-                <div class="stat-number" style="color: #f59e0b;"><fmt:formatNumber value="${chiffresAffaires}" type="number" maxFractionDigits="2"/>€</div>
+                <div class="stat-number" style="color: #f59e0b;"><fmt:formatNumber value="${chiffresAffaires}" type="number" maxFractionDigits="2"/>Ar</div>
                 <div class="stat-label">Chiffre d'affaires</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" style="color: #8b5cf6;"><fmt:formatNumber value="${revenuMaximum}" type="number" maxFractionDigits="2"/>Ar</div>
+                <div class="stat-label">Revenu maximum possible</div>
             </div>
         </div>
     </div>
@@ -113,7 +117,7 @@
                                 <tr>
                                     <td class="type-label">${entry.key}</td>
                                     <c:forEach var="cat" items="${categoriesPersonne}">
-                                        <td class="price-cell">${entry.value[cat.libelle]}€</td>
+                                        <td class="price-cell">${entry.value[cat.libelle]}Ar</td>
                                     </c:forEach>
                                 </tr>
                             </c:forEach>
@@ -209,7 +213,7 @@
                 </div>
                 <div class="summary-item total">
                     <span class="label">Montant total :</span>
-                    <span class="value" id="estimatedTotalDisplay">0,00 €</span>
+                    <span class="value" id="estimatedTotalDisplay">0,00 Ar</span>
                 </div>
                 <p class="note-info">
                     <i class="fas fa-info-circle"></i>
@@ -366,7 +370,7 @@
             strongEl.textContent = catLabel;
             
             const spanEl = document.createElement('span');
-            spanEl.textContent = prixFormate + '€';
+            spanEl.textContent = prixFormate + 'Ar';
             
             btn.appendChild(strongEl);
             btn.appendChild(spanEl);
@@ -479,7 +483,7 @@
                 
                 const valueSpan = document.createElement('span');
                 valueSpan.className = 'value';
-                valueSpan.textContent = info.total.toFixed(2) + ' €';
+                valueSpan.textContent = info.total.toFixed(2) + ' Ar';
                 
                 detailDiv.appendChild(labelSpan);
                 detailDiv.appendChild(valueSpan);
@@ -488,7 +492,7 @@
         }
         
         document.getElementById('estimatedTotalDisplay').textContent = 
-            totalPrice.toFixed(2) + ' €';
+            totalPrice.toFixed(2) + ' Ar';
 
         submitBtn.disabled = selectedCount === 0;
         document.getElementById('submitCount').textContent = 
@@ -534,13 +538,13 @@
         for (const [key, info] of Object.entries(placesByTypeCat)) {
             recapHtml += '<div class="recap-item">' +
                 '<span><strong>' + key + '</strong> (' + info.count + 'x): ' + info.places.join(', ') + '</span>' +
-                '<span>' + info.total.toFixed(2) + ' €</span>' +
+                '<span>' + info.total.toFixed(2) + ' Ar</span>' +
                 '</div>';
         }
         
         recapHtml += '<div class="recap-item">' +
             '<span><strong>Total</strong></span>' +
-            '<span><strong>' + totalPrice.toFixed(2) + ' €</strong></span>' +
+            '<span><strong>' + totalPrice.toFixed(2) + ' Ar</strong></span>' +
             '</div>';
         
         document.getElementById('modalRecapContent').innerHTML = recapHtml;

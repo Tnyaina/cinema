@@ -154,7 +154,7 @@
                                     </div>
 
                                     <div class="form-field">
-                                        <label>Prix (€)</label>
+                                        <label>Prix (Ar)</label>
                                         <input type="number" 
                                                name="tarif_prix_${status.index}" 
                                                class="form-control" 
@@ -666,7 +666,7 @@
         </c:forEach>
         html += '</select></div>';
         
-        html += '<div class="form-field"><label>Prix (€)</label>';
+        html += '<div class="form-field"><label>Prix (Ar)</label>';
         html += '<input type="number" name="tarif_prix_' + currentIndex + '" class="form-control" step="0.01" min="0" required>';
         html += '</div>';
         

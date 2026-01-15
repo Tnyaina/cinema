@@ -104,7 +104,7 @@ public class TicketController {
             redirectAttributes.addFlashAttribute("success",
                 result.getNombreTickets() + " ticket(s) réservé(s) avec succès! " +
                 "Réservation #" + result.getReservation().getId() + " - " +
-                "Total: " + String.format("%.2f", result.getMontantTotal()) + " €");
+                "Total: " + String.format("%.2f", result.getMontantTotal()) + " Ar");
             
             return "redirect:/seances/" + seanceId;
             

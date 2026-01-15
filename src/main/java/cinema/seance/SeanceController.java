@@ -10,7 +10,6 @@ import cinema.place.Place;
 import cinema.place.PlaceService;
 import cinema.tarif.TarifSeance;
 import cinema.tarif.TarifSeanceRepository;
-import cinema.tarif.TarifDefaut;
 import cinema.tarif.TarifDefautRepository;
 import cinema.ticket.TicketService;
 import cinema.referentiel.typeplace.TypePlace;
@@ -118,7 +117,7 @@ public class SeanceController {
                     if (tarifDefautOptional.isPresent()) {
                         prixFinal = tarifDefautOptional.get().getPrix();
                     } else {
-                        // Fallback: 12.0€
+                        // Fallback: 12.0Ar
                         prixFinal = 12.0;
                     }
                 }
@@ -139,6 +138,7 @@ public class SeanceController {
         Integer placesReserveeCount = toutesLesPlaces.size() - placesDispoCount;
         Double tauxOccupation = placeService.obtenirTauxOccupation(id, salleId);
         Double chiffresAffaires = ticketService.calculerChiffresAffairesSeance(id);
+        Double revenuMaximum = seanceService.calculerRevenuMaximumSeance(id);
         
         model.addAttribute("seance", seance);
         model.addAttribute("placesParRangee", placesParRangee);
@@ -152,6 +152,7 @@ public class SeanceController {
         model.addAttribute("tauxOccupation", String.format("%.0f", tauxOccupation));
         model.addAttribute("totalPlaces", toutesLesPlaces.size());
         model.addAttribute("chiffresAffaires", chiffresAffaires);
+        model.addAttribute("revenuMaximum", revenuMaximum);
         model.addAttribute("page", "seances/detail");
         model.addAttribute("pageTitle", "Réserver - " + seance.getFilm().getTitre());
         model.addAttribute("pageActive", "seances");

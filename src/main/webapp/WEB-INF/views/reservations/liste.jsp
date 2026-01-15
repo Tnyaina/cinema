@@ -129,7 +129,7 @@
                                 </div>
                                 <div class="info-item">
                                     <span class="label"><i class="fas fa-money-bill-wave"></i> Total</span>
-                                    <span class="value price">${reservation.montantTotal}€</span>
+                                    <span class="value price">${reservation.montantTotal}Ar</span>
                                 </div>
                             </div>
                         </div>

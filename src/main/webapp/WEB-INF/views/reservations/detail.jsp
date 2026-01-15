@@ -32,7 +32,7 @@
         <div class="header-summary">
             <div class="summary-item">
                 <span class="label">Montant total</span>
-                <span class="value">${reservation.montantTotal}€</span>
+                <span class="value">${reservation.montantTotal}Ar</span>
             </div>
             <div class="summary-item">
                 <span class="label">Nombre de places</span>
@@ -156,7 +156,7 @@
                                             </c:otherwise>
                                         </c:choose>
                                     </td>
-                                    <td class="price">${ticket.prix}€</td>
+                                    <td class="price">${ticket.prix}Ar</td>
                                     <td>
                                         <span class="status-small" style="background-color: 
                                             <c:choose>
@@ -192,7 +192,7 @@
                     </div>
                     <div class="summary-row total">
                         <span class="label">Montant total</span>
-                        <span class="value">${reservation.montantTotal}€</span>
+                        <span class="value">${reservation.montantTotal}Ar</span>
                     </div>
                 </div>
             </c:if>

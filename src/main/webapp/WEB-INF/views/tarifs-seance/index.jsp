@@ -144,7 +144,7 @@
                                     </c:otherwise>
                                 </c:choose>
                             </td>
-                            <td><strong>${tarif.prix} €</strong></td>
+                            <td><strong>${tarif.prix} Ar</strong></td>
                             <td class="text-muted">${tarif.createdAt}</td>
                             <td>
                                 <div class="actions">

@@ -235,7 +235,7 @@ INSERT INTO categorie_personne (libelle) VALUES
 ('ADULTE'),('ENFANT'),('SENIOR');
 
 INSERT INTO type_place (libelle) VALUES
-('STANDARD'),('VIP'),('PMR');
+('STANDARD'),('VIP'),('Premium');
 
 INSERT INTO langue (code, libelle) VALUES
 ('FR','Francais'),

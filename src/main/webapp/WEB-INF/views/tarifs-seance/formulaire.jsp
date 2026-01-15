@@ -73,7 +73,7 @@
                                     <div class="price-input-group">
                                         <input type="number" name="prix[]" class="form-control prix-input" 
                                                placeholder="0.00" step="0.01" min="0" required>
-                                        <span class="currency">€</span>
+                                        <span class="currency">Ar</span>
                                     </div>
                                 </td>
                                 <td>
@@ -151,7 +151,7 @@
 
         tr.innerHTML = '<td>' + typeSelectHTML + '</td>' +
                       '<td>' + catSelectHTML + '</td>' +
-                      '<td><div class="price-input-group"><input type="number" name="prix[]" class="form-control prix-input" placeholder="0.00" step="0.01" min="0" required><span class="currency">€</span></div></td>' +
+                      '<td><div class="price-input-group"><input type="number" name="prix[]" class="form-control prix-input" placeholder="0.00" step="0.01" min="0" required><span class="currency">Ar</span></div></td>' +
                       '<td><button type="button" class="btn btn-sm btn-danger" onclick="supprimerLigneTarif(this)"><i class="fas fa-trash"></i></button></td>';
         
         tbody.appendChild(tr);
@@ -512,7 +512,7 @@
 
         tr.innerHTML = '<td>' + typeSelectHTML + '</td>' +
                       '<td>' + catSelectHTML + '</td>' +
-                      '<td><div class="price-input-group"><input type="number" name="prix[]" class="form-control prix-input" placeholder="0.00" step="0.01" min="0" required><span class="currency">€</span></div></td>' +
+                      '<td><div class="price-input-group"><input type="number" name="prix[]" class="form-control prix-input" placeholder="0.00" step="0.01" min="0" required><span class="currency">Ar</span></div></td>' +
                       '<td><button type="button" class="btn btn-sm btn-danger" onclick="supprimerLigneTarif(this)"><i class="fas fa-trash"></i></button></td>';
         
         tbody.appendChild(tr);

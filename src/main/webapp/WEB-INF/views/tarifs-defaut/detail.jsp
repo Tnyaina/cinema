@@ -57,7 +57,7 @@
             <div class="info-group">
                 <label>Prix:</label>
                 <p>
-                    <span class="price-badge">${tarifDefaut.prix} €</span>
+                    <span class="price-badge">${tarifDefaut.prix} Ar</span>
                 </p>
             </div>
 

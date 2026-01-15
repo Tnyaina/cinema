@@ -181,7 +181,7 @@
                                         ${ticket.place.typePlace.libelle}
                                     </span>
                                 </td>
-                                <td class="price">${ticket.prix}€</td>
+                                <td class="price">${ticket.prix}Ar</td>
                                 <td class="status-cell">
                                     <span class="status-badge" style="background-color: 
                                         <c:choose>
@@ -867,7 +867,7 @@
 
         // Mettre à jour les statistiques
         document.getElementById('clientCount').textContent = clientMap.size;
-        document.getElementById('totalRevenue').textContent = totalRevenue.toFixed(2) + '€';
+        document.getElementById('totalRevenue').textContent = totalRevenue.toFixed(2) + 'Ar';
 
         // Générer la table de synthèse
         let html = '<table class="summary-table"><thead><tr><th><i class="fas fa-user"></i> Client</th><th><i class="fas fa-envelope"></i> Email</th><th><i class="fas fa-ticket-alt"></i> Tickets</th><th><i class="fas fa-money-bill-wave"></i> Total dépensé</th></tr></thead><tbody>';
@@ -881,7 +881,7 @@
             html += '<td>' + client.name + '</td>';
             html += '<td>' + client.email + '</td>';
             html += '<td style="text-align: center; font-weight: 700;">' + client.count + '</td>';
-            html += '<td style="color: #10b981; font-weight: 700;">' + client.total.toFixed(2) + '€</td>';
+            html += '<td style="color: #10b981; font-weight: 700;">' + client.total.toFixed(2) + 'Ar</td>';
             html += '</tr>';
         });
 
