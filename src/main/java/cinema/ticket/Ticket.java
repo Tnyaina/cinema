@@ -32,7 +32,7 @@ public class Ticket extends BaseEntity {
     @JoinColumn(name = "id_categorie_personne")
     private CategoriePersonne categoriePersonne;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "NUMERIC(15,2)")
     private Double prix;
 
     // Constructeurs

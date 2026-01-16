@@ -102,6 +102,10 @@
                 <!-- TARIFICATION -->
                 <div class="nav-section">
                     <div class="nav-section-title">Tarification</div>
+                    <a href="<c:url value='/configuration-tarifaire'/>" class="nav-item ${pageActive == 'configuration-tarifaire' ? 'active' : ''}">
+                        <i class="fas fa-cogs"></i>
+                        <span>Configuration tarifaire</span>
+                    </a>
                     <a href="<c:url value='/tarifs-defaut'/>" class="nav-item ${pageActive == 'tarifs-defaut' ? 'active' : ''}">
                         <i class="fas fa-euro-sign"></i>
                         <span>Tarifs par défaut</span>

@@ -10,6 +10,8 @@ import cinema.referentiel.typeplace.TypePlaceRepository;
 import cinema.referentiel.categoriepersonne.CategoriePersonne;
 import cinema.referentiel.categoriepersonne.CategoriePersonneRepository;
 import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +22,7 @@ public class TarifSeanceService {
     private final SeanceRepository seanceRepository;
     private final TypePlaceRepository typePlaceRepository;
     private final CategoriePersonneRepository categoriePersonneRepository;
+    private final ConfigurationTarifaireService configurationTarifaireService;
 
     public TarifSeance creerTarifSeance(TarifSeance tarifSeance) {
         if (!tarifSeance.estValide()) {
@@ -164,5 +167,54 @@ public class TarifSeanceService {
     public CategoriePersonne obtenirCategoriePersonneById(Long categoriePersonneId) {
         return categoriePersonneRepository.findById(categoriePersonneId)
             .orElseThrow(() -> new RuntimeException("Catégorie de personne non trouvée avec l'ID: " + categoriePersonneId));
+    }
+
+    /**
+     * Crée automatiquement les tarifs pour toutes les catégories de personne 
+     * pour une séance et un type de place, basé sur un tarif de référence
+     */
+    public List<TarifSeance> creerTarifsSeanceAutomatiques(Long seanceId, Long typePlaceId, Double tarifReference) {
+        Seance seance = obtenirSeanceById(seanceId);
+        TypePlace typePlace = obtenirTypePlaceById(typePlaceId);
+        List<CategoriePersonne> categories = obtenirToutesLesCategoriesPersonne();
+        List<TarifSeance> tarifsCreees = new ArrayList<>();
+        
+        for (CategoriePersonne categorie : categories) {
+            // Vérifier si un tarif existe déjà pour cette combinaison
+            if (tarifSeanceRepository.findBySeanceIdAndTypePlaceIdAndCategoriePersonneId(
+                    seanceId, typePlaceId, categorie.getId()).isEmpty()) {
+                
+                // Calculer le tarif selon la configuration tarifaire
+                Double coefficient = configurationTarifaireService
+                    .obtenirCoefficientParCategorie(categorie.getId());
+                Double tarifCalcule = Math.round(tarifReference * coefficient * 100.0) / 100.0;
+                
+                TarifSeance tarif = new TarifSeance(seance, typePlace, categorie, tarifCalcule);
+                tarifsCreees.add(tarifSeanceRepository.save(tarif));
+            }
+        }
+        
+        return tarifsCreees;
+    }
+
+    /**
+     * Crée les tarifs pour une séance en masse avec configuration automatique
+     * Le tarif de référence est utilisé pour calculer tous les autres tarifs
+     */
+    public List<TarifSeance> creerTarifsSeanceEnMasseAvecConfiguration(
+            Long seanceId, Map<Long, Double> tarifsReferenceParTypePlace) {
+        
+        List<TarifSeance> tousLesTarifsCreees = new ArrayList<>();
+        
+        for (Map.Entry<Long, Double> entry : tarifsReferenceParTypePlace.entrySet()) {
+            Long typePlaceId = entry.getKey();
+            Double tarifReference = entry.getValue();
+            
+            List<TarifSeance> tarifsTypePlace = creerTarifsSeanceAutomatiques(
+                seanceId, typePlaceId, tarifReference);
+            tousLesTarifsCreees.addAll(tarifsTypePlace);
+        }
+        
+        return tousLesTarifsCreees;
     }
 }

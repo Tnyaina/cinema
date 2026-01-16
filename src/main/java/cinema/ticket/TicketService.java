@@ -116,12 +116,13 @@ public class TicketService {
     /**
      * Calculer le chiffre d'affaires pour une séance donnée
      * @param seanceId L'ID de la séance
-     * @return Le chiffre d'affaires total (somme des prix des tickets vendus/confirmés)
+     * @return Le chiffre d'affaires total (somme des prix des tickets vendus/confirmés, excluant les annulés)
      */
     @Transactional(readOnly = true)
     public Double calculerChiffresAffairesSeance(Long seanceId) {
         List<Ticket> tickets = ticketRepository.findBySeanceId(seanceId);
         return tickets.stream()
+            .filter(t -> t.getStatus() != null && !t.getStatus().getCode().equals("ANNULEE"))
             .mapToDouble(Ticket::getPrix)
             .sum();
     }

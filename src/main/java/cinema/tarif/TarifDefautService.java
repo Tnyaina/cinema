@@ -8,6 +8,10 @@ import cinema.referentiel.typeplace.TypePlaceRepository;
 import cinema.referentiel.categoriepersonne.CategoriePersonne;
 import cinema.referentiel.categoriepersonne.CategoriePersonneRepository;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +21,7 @@ public class TarifDefautService {
     private final TarifDefautRepository tarifDefautRepository;
     private final TypePlaceRepository typePlaceRepository;
     private final CategoriePersonneRepository categoriePersonneRepository;
+    private final ConfigurationTarifaireService configurationTarifaireService;
 
     public TarifDefaut creerTarifDefaut(TarifDefaut tarifDefaut) {
         if (!tarifDefaut.estValide()) {
@@ -111,5 +116,69 @@ public class TarifDefautService {
     public CategoriePersonne obtenirCategoriePersonneById(Long categoriePersonneId) {
         return categoriePersonneRepository.findById(categoriePersonneId)
             .orElseThrow(() -> new RuntimeException("Catégorie de personne non trouvée avec l'ID: " + categoriePersonneId));
+    }
+
+    /**
+     * Crée automatiquement les tarifs pour toutes les catégories de personne 
+     * basé sur un tarif de référence et un type de place
+     */
+    public List<TarifDefaut> creerTarifsAutomatiques(Long typePlaceId, Double tarifReference) {
+        TypePlace typePlace = obtenirTypePlaceById(typePlaceId);
+        List<CategoriePersonne> categories = obtenirToutesLesCategoriesPersonne();
+        List<TarifDefaut> tarifsCreees = new ArrayList<>();
+        
+        for (CategoriePersonne categorie : categories) {
+            // Vérifier si un tarif existe déjà pour cette combinaison
+            if (tarifDefautRepository.findByTypePlaceIdAndCategoriePersonneId(
+                    typePlaceId, categorie.getId()).isEmpty()) {
+                
+                // Calculer le tarif selon la configuration tarifaire
+                Double coefficient = configurationTarifaireService
+                    .obtenirCoefficientParCategorie(categorie.getId());
+                Double tarifCalcule = Math.round(tarifReference * coefficient * 100.0) / 100.0;
+                
+                TarifDefaut tarif = new TarifDefaut(typePlace, categorie, tarifCalcule);
+                tarifsCreees.add(tarifDefautRepository.save(tarif));
+            }
+        }
+        
+        return tarifsCreees;
+    }
+
+    /**
+     * Met à jour tous les tarifs existants selon la nouvelle configuration tarifaire
+     * Recalcule tous les tarifs basés sur les coefficients configurés
+     */
+    public void mettreAJourTarifsSelonConfiguration() {
+        try {
+            // Grouper les tarifs par type de place
+            List<TarifDefaut> tousLesTarifs = obtenirTousTarifDefauts();
+            Map<Long, List<TarifDefaut>> tarifsParTypePlace = tousLesTarifs.stream()
+                .collect(Collectors.groupingBy(t -> 
+                    t.getTypePlace() != null ? t.getTypePlace().getId() : 0L));
+            
+            for (List<TarifDefaut> tarifsTypePlace : tarifsParTypePlace.values()) {
+                // Construire la map des tarifs de base pour ce type de place
+                Map<String, Double> tarifsBase = new HashMap<>();
+                for (TarifDefaut tarif : tarifsTypePlace) {
+                    tarifsBase.put(tarif.getCategoriePersonne().getLibelle(), tarif.getPrix());
+                }
+                
+                // Calculer tous les tarifs selon la configuration
+                Map<String, Double> tarifsCalcules = configurationTarifaireService
+                    .calculerTarifsEnCascade(tarifsBase);
+                
+                // Mettre à jour les tarifs
+                for (TarifDefaut tarif : tarifsTypePlace) {
+                    String categorieNom = tarif.getCategoriePersonne().getLibelle();
+                    if (tarifsCalcules.containsKey(categorieNom)) {
+                        tarif.setPrix(tarifsCalcules.get(categorieNom));
+                        tarifDefautRepository.save(tarif);
+                    }
+                }
+            }
+        } catch (RuntimeException e) {
+            // Si erreur de configuration, ignorer la mise à jour automatique
+        }
     }
 }
