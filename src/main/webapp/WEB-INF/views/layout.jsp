@@ -6,6 +6,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion de Cinéma - ${pageTitle}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="<c:url value='/css/cinema-style.css'/>">
 </head>
@@ -138,6 +141,35 @@
                     <a href="<c:url value='/historiques'/>" class="nav-item ${pageActive == 'historiques' ? 'active' : ''}">
                         <i class="fas fa-history"></i>
                         <span>Historiques</span>
+                    </a>
+                </div>
+
+                <!-- PUBLICITE -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Publicité</div>
+                    <a href="<c:url value='/societes'/>" class="nav-item ${pageActive == 'societes' ? 'active' : ''}">
+                        <i class="fas fa-building"></i>
+                        <span>Sociétés</span>
+                    </a>
+                    <a href="<c:url value='/types-diffusion'/>" class="nav-item ${pageActive == 'types-diffusion' ? 'active' : ''}">
+                        <i class="fas fa-broadcast-tower"></i>
+                        <span>Types de diffusion</span>
+                    </a>
+                    <a href="<c:url value='/videos-publicitaires'/>" class="nav-item ${pageActive == 'videos-publicitaires' ? 'active' : ''}">
+                        <i class="fas fa-video"></i>
+                        <span>Vidéos publicitaires</span>
+                    </a>
+                    <a href="<c:url value='/diffusions-publicitaires'/>" class="nav-item ${pageActive == 'diffusions-publicitaires' ? 'active' : ''}">
+                        <i class="fas fa-satellite-dish"></i>
+                        <span>Diffusions</span>
+                    </a>
+                    <a href="<c:url value='/tarifs-publicite'/>" class="nav-item ${pageActive == 'tarifs-publicite' ? 'active' : ''}">
+                        <i class="fas fa-tag"></i>
+                        <span>Tarifs</span>
+                    </a>
+                    <a href="<c:url value='/paiements-publicite'/>" class="nav-item ${pageActive == 'paiements-publicite' ? 'active' : ''}">
+                        <i class="fas fa-money-bill"></i>
+                        <span>Paiements</span>
                     </a>
                 </div>
 
@@ -331,5 +363,7 @@
             });
         }, 5000);
     </script>
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

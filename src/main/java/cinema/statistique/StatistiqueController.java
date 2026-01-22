@@ -38,6 +38,7 @@ public class StatistiqueController {
 
         model.addAttribute("page", "statistiques");
         model.addAttribute("pageTitle", "Statistiques de Trésorerie");
+        model.addAttribute("pageActive", "statistiques");
         model.addAttribute("stats", stats);
         model.addAttribute("periode", periode);
         model.addAttribute("mois", mois);
