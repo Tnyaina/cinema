@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -31,4 +32,18 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     // Compter les places réservées/confirmées/payées pour une séance
     @Query("SELECT COUNT(t) FROM Ticket t WHERE t.seance.id = :seanceId AND t.status.code IN ('RESERVEE', 'CONFIRMEE', 'PAYEE')")
     long countPlacesVenduesBySeance(@Param("seanceId") Long seanceId);
+
+    // Statistiques de trésorerie - utilise tous les tickets sauf les annulés
+    @Query("SELECT SUM(t.prix) FROM Ticket t WHERE t.seance.debut >= :debut AND t.seance.debut <= :fin AND t.status.code != 'ANNULEE'")
+    Double calculerCATotalParPeriode(@Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
+
+    @Query("SELECT COUNT(t) FROM Ticket t WHERE t.seance.debut >= :debut AND t.seance.debut <= :fin AND t.status.code != 'ANNULEE'")
+    Long countTicketsVendusParPeriode(@Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
+
+    @Query("SELECT COUNT(t) FROM Ticket t WHERE t.seance.debut >= :debut AND t.seance.debut <= :fin AND t.status.code = 'ANNULEE'")
+    Long countTicketsAnnulesParPeriode(@Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
+
+    // Récupère le taux d'occupation par séance pour calculer la moyenne en Java - utilise tous les tickets sauf les annulés
+    @Query("SELECT CAST(COUNT(t) AS FLOAT) / s.salle.capacite * 100 FROM Ticket t JOIN Seance s ON t.seance.id = s.id WHERE s.debut >= :debut AND s.debut <= :fin AND t.status.code != 'ANNULEE' GROUP BY s.id, s.salle.capacite")
+    List<Double> calculerTauxOccupationParSeanceParPeriode(@Param("debut") LocalDateTime debut, @Param("fin") LocalDateTime fin);
 }
