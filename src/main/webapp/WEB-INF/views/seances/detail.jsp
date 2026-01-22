@@ -89,8 +89,69 @@
         </div>
     </div>
 
-    <!-- FORMULAIRE DE RÉSERVATION -->
-    <form method="POST" action="<c:url value='/tickets/acheter'/>" id="reservationForm" class="reservation-form">
+    <!-- SECTION PUBLICITÉS -->
+    <c:if test="${not empty diffusions}">
+        <div class="seance-publicites-section">
+            <h3><i class="fas fa-megaphone"></i> Publicités diffusées</h3>
+            <div class="publicites-container">
+                <div class="publicites-stats">
+                    <div class="pub-stat-card">
+                        <div class="pub-stat-value"><fmt:formatNumber value="${diffusions.size()}" type="number"/></div>
+                        <div class="pub-stat-label">Diffusions totales</div>
+                    </div>
+                    <div class="pub-stat-card">
+                        <div class="pub-stat-value"><fmt:formatNumber value="${pubCATotal}" type="number" maxFractionDigits="2"/>Ar</div>
+                        <div class="pub-stat-label">CA Publicités</div>
+                    </div>
+                    <div class="pub-stat-card">
+                        <div class="pub-stat-value"><fmt:formatNumber value="${caTotal}" type="number" maxFractionDigits="2"/>Ar</div>
+                        <div class="pub-stat-label">CA Total (tickets + pub)</div>
+                    </div>
+                </div>
+                
+                <div class="publicites-table-wrapper">
+                    <table class="publicites-table">
+                        <thead>
+                            <tr>
+                                <th>Société</th>
+                                <th>Vidéo publicitaire</th>
+                                <th class="text-center">Nombre de diffusions</th>
+                                <th class="text-right">Tarif unitaire</th>
+                                <th class="text-right">Tarif total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:forEach var="group" items="${diffusionsGroupees}">
+                                <tr>
+                                    <td>
+                                        <i class="fas fa-building" style="color: #0066cc; margin-right: 8px;"></i>
+                                        ${group.societe}
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-video" style="color: #3b82f6; margin-right: 8px;"></i>
+                                        ${group.video}
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-primary">${group.nombre}</span>
+                                    </td>
+                                    <td class="text-right">
+                                        <fmt:formatNumber value="${group.tarifUnitaire}" type="number" maxFractionDigits="2"/>Ar
+                                    </td>
+                                    <td class="text-right">
+                                        <strong style="color: #10b981;"><fmt:formatNumber value="${group.tarifTotal}" type="number" maxFractionDigits="2"/>Ar</strong>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </c:if>
+
+    <!-- SECTION RÉSERVATION -->
+    <div class="seance-reservation-header">
+        <h2><i class="fas fa-ticket-alt"></i> Réservation</h2>
         <input type="hidden" name="seanceId" value="${seance.id}">
         
         <!-- ÉCRAN -->

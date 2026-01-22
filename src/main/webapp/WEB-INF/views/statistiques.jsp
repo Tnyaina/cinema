@@ -99,138 +99,115 @@
 
         <!-- Prix moyen -->
         <div class="stat-card card">
-            <div class="stat-icon" style="background-color: #a78bfa;">
-                <i class="fas fa-euro-sign"></i>
-            </div>
-            <div class="stat-content">
-                <div class="stat-label">Prix moyen</div>
-                <div class="stat-value">
-                    <fmt:formatNumber value="${stats.prixMoyenTicket}" type="number" maxFractionDigits="2" />Ar
-                </div>
-                <div class="stat-subtext">Par ticket</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Deuxième ligne de statistiques -->
-    <div class="stats-grid">
-        <!-- Taux d'occupation -->
-        <div class="stat-card card">
-            <div class="stat-icon" style="background-color: #06b6d4;">
-                <i class="fas fa-chart-pie"></i>
-            </div>
-            <div class="stat-content">
-                <div class="stat-label">Taux d'occupation</div>
-                <div class="stat-value">
-                    <fmt:formatNumber value="${stats.tauxOccupationMoyen}" type="number" maxFractionDigits="1" />%
-                </div>
-                <div class="stat-subtext">Moyenne des salles</div>
-            </div>
-        </div>
-
-        <!-- Tickets annulés -->
-        <div class="stat-card card">
-            <div class="stat-icon" style="background-color: #ef4444;">
-                <i class="fas fa-ban"></i>
-            </div>
-            <div class="stat-content">
-                <div class="stat-label">Annulations</div>
-                <div class="stat-value">${stats.nombreTicketsAnnules}</div>
-                <div class="stat-subtext">Tickets annulés</div>
-            </div>
-        </div>
-
-        <!-- Ratio réussite -->
-        <div class="stat-card card">
-            <div class="stat-icon" style="background-color: #8b5cf6;">
-                <i class="fas fa-percent"></i>
-            </div>
-            <div class="stat-content">
-                <div class="stat-label">Taux de réussite</div>
-                <c:set var="tauxReussite" value="0"/>
-                <c:if test="${stats.nombreTicketsVendus + stats.nombreTicketsAnnules > 0}">
-                    <c:set var="tauxReussite" value="${(stats.nombreTicketsVendus * 100) / (stats.nombreTicketsVendus + stats.nombreTicketsAnnules)}"/>
-                </c:if>
-                <div class="stat-value">
-                    <fmt:formatNumber value="${tauxReussite}" type="number" maxFractionDigits="1" />%
-                </div>
-                <div class="stat-subtext">Confirmations</div>
-            </div>
-        </div>
-
-        <!-- Nombre de jours avec activité -->
-        <c:set var="dureeStats" value="0"/>
-        <c:if test="${periode == 'mois'}">
-            <c:set var="dureeStats" value="30 jours"/>
-        </c:if>
-        <c:if test="${periode == 'annee'}">
-            <c:set var="dureeStats" value="365 jours"/>
-        </c:if>
-
-        <div class="stat-card card">
             <div class="stat-icon" style="background-color: #ec4899;">
-                <i class="fas fa-calendar-alt"></i>
+                <i class="fas fa-megaphone"></i>
             </div>
             <div class="stat-content">
-                <div class="stat-label">Période analysée</div>
-                <div class="stat-value">${dureeStats}</div>
-                <div class="stat-subtext">
-                    <c:if test="${periode == 'mois'}">
-                        ${mois}/${annee}
-                    </c:if>
-                    <c:if test="${periode == 'annee'}">
-                        Année ${annee}
-                    </c:if>
+                <div class="stat-label">CA Publicités</div>
+                <div class="stat-value">
+                    <fmt:formatNumber value="${pubCAPeriode}" type="number" maxFractionDigits="2" />Ar
                 </div>
+                <div class="stat-subtext">Revenu publicitaire</div>
             </div>
         </div>
     </div>
 
-    <!-- Détails supplémentaires -->
-    <div class="details-section card">
-        <h2>Résumé détaillé</h2>
-        <div class="details-table">
-            <table>
+    <!-- Section Paiements par Société -->
+    <div class="paiements-section card">
+        <h2><i class="fas fa-handshake"></i> Suivi des paiements par société</h2>
+        <div class="paiements-table-wrapper">
+            <table class="paiements-table">
                 <thead>
                     <tr>
-                        <th>Indicateur</th>
-                        <th>Valeur</th>
-                        <th>Description</th>
+                        <th>Société</th>
+                        <th class="text-right">CA Publicités</th>
+                        <th class="text-right">Montant payé</th>
+                        <th class="text-right">Reste à payer</th>
+                        <th class="text-center">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td class="indicator-name">Chiffre d'affaires</td>
-                        <td class="value-cell"><fmt:formatNumber value="${stats.CATotal}" type="number" maxFractionDigits="2" />Ar</td>
-                        <td>Somme des revenus de tickets confirmés/payés</td>
-                    </tr>
-                    <tr>
-                        <td class="indicator-name">Nombre de séances</td>
-                        <td class="value-cell">${stats.nombreSeances}</td>
-                        <td>Total des projections programmées</td>
-                    </tr>
-                    <tr>
-                        <td class="indicator-name">Tickets vendus</td>
-                        <td class="value-cell">${stats.nombreTicketsVendus}</td>
-                        <td>Nombre de tickets confirmés/payés</td>
-                    </tr>
-                    <tr>
-                        <td class="indicator-name">Tickets annulés</td>
-                        <td class="value-cell">${stats.nombreTicketsAnnules}</td>
-                        <td>Nombre de tickets annulés</td>
-                    </tr>
-                    <tr>
-                        <td class="indicator-name">Prix moyen par ticket</td>
-                        <td class="value-cell"><fmt:formatNumber value="${stats.prixMoyenTicket}" type="number" maxFractionDigits="2" />Ar</td>
-                        <td>Revenu moyen par ticket vendu</td>
-                    </tr>
-                    <tr>
-                        <td class="indicator-name">Taux d'occupation</td>
-                        <td class="value-cell"><fmt:formatNumber value="${stats.tauxOccupationMoyen}" type="number" maxFractionDigits="1" />%</td>
-                        <td>Pourcentage moyen de places occupées</td>
-                    </tr>
+                    <c:forEach var="societe" items="${societesPaiements}">
+                        <tr>
+                            <td>
+                                <i class="fas fa-building" style="color: #0066cc; margin-right: 8px;"></i>
+                                ${societe.nom}
+                            </td>
+                            <td class="text-right">
+                                <strong style="color: #3b82f6;"><fmt:formatNumber value="${societe.caPub}" type="number" maxFractionDigits="2" />Ar</strong>
+                            </td>
+                            <td class="text-right">
+                                <strong style="color: #10b981;"><fmt:formatNumber value="${societe.montantPaye}" type="number" maxFractionDigits="2" />Ar</strong>
+                            </td>
+                            <td class="text-right">
+                                <c:choose>
+                                    <c:when test="${societe.resteAPayer > 0}">
+                                        <strong style="color: #ef4444;"><fmt:formatNumber value="${societe.resteAPayer}" type="number" maxFractionDigits="2" />Ar</strong>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span style="color: #10b981;">✓ Payé</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
+                            <td class="text-center">
+                                <c:if test="${societe.resteAPayer > 0}">
+                                    <button class="btn btn-sm btn-primary" onclick="openPaiementModal('${societe.id}', '${societe.nom}', ${societe.resteAPayer})">
+                                        <i class="fas fa-money-bill-wave"></i> Payer
+                                    </button>
+                                </c:if>
+                                <c:if test="${societe.resteAPayer <= 0}">
+                                    <span class="badge bg-success">Payée</span>
+                                </c:if>
+                            </td>
+                        </tr>
+                    </c:forEach>
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <!-- Modal Paiement -->
+    <div class="modal fade" id="paiementModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-warning text-white border-0">
+                    <h5 class="modal-title fw-bold">
+                        <i class="fas fa-money-bill-wave me-2"></i> Enregistrer un paiement
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="post" action="<c:url value='/paiements-publicite'/>">
+                    <div class="modal-body">
+                        <input type="hidden" id="societeId" name="societeId">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Société</label>
+                            <input type="text" class="form-control" id="societeName" disabled>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Montant à payer (Ar)</label>
+                            <input type="number" id="montantReste" class="form-control" disabled>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label" for="montantPaiement">Montant du paiement (Ar) <span class="required">*</span></label>
+                            <input type="number" id="montantPaiement" name="montant" class="form-control" step="0.01" min="0" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label" for="datePaiement">Date du paiement <span class="required">*</span></label>
+                            <input type="date" id="datePaiement" name="datePaiement" class="form-control" value="${today}" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 bg-light">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check"></i> Enregistrer le paiement
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>
@@ -401,6 +378,104 @@
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
     }
+
+    /* SECTION PAIEMENTS */
+    .paiements-section {
+        margin-top: 2rem;
+        padding: 1.5rem;
+        background: white;
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .paiements-section h2 {
+        margin: 0 0 1.5rem 0;
+        color: #003d7a;
+        font-size: 1.25rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .paiements-table-wrapper {
+        overflow-x: auto;
+        border-radius: 0.5rem;
+        border: 1px solid #e0e0e0;
+    }
+
+    .paiements-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+    }
+
+    .paiements-table thead {
+        background: #f3f4f6;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .paiements-table thead th {
+        padding: 12px 15px;
+        text-align: left;
+        font-weight: 600;
+        color: #003d7a;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .paiements-table thead th.text-right {
+        text-align: right;
+    }
+
+    .paiements-table thead th.text-center {
+        text-align: center;
+    }
+
+    .paiements-table tbody tr {
+        border-bottom: 1px solid #e0e0e0;
+        transition: background-color 0.2s;
+    }
+
+    .paiements-table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .paiements-table tbody td {
+        padding: 12px 15px;
+        color: #1e293b;
+        vertical-align: middle;
+    }
+
+    .paiements-table tbody td.text-right {
+        text-align: right;
+    }
+
+    .paiements-table tbody td.text-center {
+        text-align: center;
+    }
+
+    .paiements-table .required {
+        color: #dc3545;
+    }
+
+    .btn-sm {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+    }
+
+    .badge {
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.25rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .badge.bg-success {
+        background-color: #10b981 !important;
+        color: white;
+    }
 </style>
 
 <script>
@@ -411,5 +486,16 @@ function updateFilters(value) {
     } else {
         moisGroup.style.display = 'none';
     }
+}
+
+function openPaiementModal(societeId, societeName, montantReste) {
+    document.getElementById('societeId').value = societeId;
+    document.getElementById('societeName').value = societeName;
+    document.getElementById('montantReste').value = montantReste.toFixed(2);
+    document.getElementById('montantPaiement').value = montantReste.toFixed(2);
+    document.getElementById('montantPaiement').max = montantReste.toFixed(2);
+    
+    const modal = new bootstrap.Modal(document.getElementById('paiementModal'));
+    modal.show();
 }
 </script>

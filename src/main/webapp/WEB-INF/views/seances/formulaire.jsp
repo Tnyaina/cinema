@@ -181,6 +181,73 @@
             </button>
         </div>
 
+        <div class="form-section">
+            <div class="section-title">
+                <h3>Publicités <span class="optional-badge">Optionnel</span></h3>
+                <p class="section-hint">Assignez des publicités à diffuser pendant cette séance</p>
+            </div>
+
+            <div id="publicitesContainer">
+                <c:if test="${not empty diffusions}">
+                    <c:forEach var="diffusion" items="${diffusions}" varStatus="status">
+                        <div class="publicite-row">
+                            <div class="publicite-row-content">
+                                <div class="form-row-publicite">
+                                    <div class="form-field">
+                                        <label>Vidéo publicitaire</label>
+                                        <select name="pub_video_${status.index}" class="form-control" onchange="updateTarifPublicite(this)">
+                                            <option value="">-- Sélectionner --</option>
+                                            <c:forEach var="video" items="${videos}">
+                                                <option value="${video.id}" 
+                                                        data-societe="${video.societe.id}"
+                                                        data-duree="${video.duree}"
+                                                        <c:if test="${diffusion.videoPublicitaire.id == video.id}">selected</c:if>>
+                                                    ${video.libelle} (${video.societe.libelle} - ${video.duree}s)
+                                                </option>
+                                            </c:forEach>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-field">
+                                        <label>Type de diffusion</label>
+                                        <select name="pub_type_${status.index}" class="form-control" onchange="updateTarifPublicite(this)">
+                                            <option value="">-- Sélectionner --</option>
+                                            <c:forEach var="type" items="${typesDiffusion}">
+                                                <option value="${type.id}" 
+                                                        <c:if test="${diffusion.typeDiffusion.id == type.id}">selected</c:if>>
+                                                    ${type.libelle}
+                                                </option>
+                                            </c:forEach>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-field">
+                                        <label>Nombre de diffusions</label>
+                                        <input type="number" 
+                                               name="pub_nombre_${status.index}" 
+                                               class="form-control" 
+                                               min="1" 
+                                               value="1"
+                                               required>
+                                    </div>
+
+                                    <div class="form-field-action">
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="removePubliciteRow(this)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </c:forEach>
+                </c:if>
+            </div>
+
+            <button type="button" class="btn btn-sm btn-outline-primary" onclick="addPubliciteRow()">
+                <i class="fas fa-plus"></i> Ajouter une publicité
+            </button>
+        </div>
+
         <div class="form-actions">
             <button type="submit" class="btn btn-primary" id="submitBtn">
                 <i class="fas fa-save"></i>
@@ -394,9 +461,24 @@
         border-radius: 4px;
     }
 
+    .publicite-row {
+        background: #f0f7ff;
+        padding: 15px;
+        margin-bottom: 12px;
+        border-left: 4px solid #0066cc;
+        border-radius: 4px;
+    }
+
     .form-row-tarif {
         display: grid;
         grid-template-columns: 1.5fr 1.5fr 1fr 0.5fr;
+        gap: 12px;
+        align-items: flex-end;
+    }
+
+    .form-row-publicite {
+        display: grid;
+        grid-template-columns: 2fr 1.5fr 1fr 0.5fr;
         gap: 12px;
         align-items: flex-end;
     }
@@ -686,5 +768,60 @@
         if (row) {
             row.remove();
         }
+    }
+
+    // Gestion publicités
+    let publicitesRowCount = document.querySelectorAll('.publicite-row').length;
+
+    function addPubliciteRow() {
+        const container = document.getElementById('publicitesContainer');
+        const currentIndex = publicitesRowCount;
+        
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'publicite-row';
+        
+        let html = '<div class="publicite-row-content"><div class="form-row-publicite">';
+        
+        html += '<div class="form-field"><label>Vidéo publicitaire</label>';
+        html += '<select name="pub_video_' + currentIndex + '" class="form-control">';
+        html += '<option value="">-- Sélectionner --</option>';
+        <c:forEach var="video" items="${videos}">
+        html += '<option value="${video.id}" data-societe="${video.societe.id}" data-duree="${video.duree}">${video.libelle} (${video.societe.libelle} - ${video.duree}s)</option>';
+        </c:forEach>
+        html += '</select></div>';
+        
+        html += '<div class="form-field"><label>Type de diffusion</label>';
+        html += '<select name="pub_type_' + currentIndex + '" class="form-control">';
+        html += '<option value="">-- Sélectionner --</option>';
+        <c:forEach var="type" items="${typesDiffusion}">
+        html += '<option value="${type.id}">${type.libelle}</option>';
+        </c:forEach>
+        html += '</select></div>';
+        
+        html += '<div class="form-field"><label>Nombre de diffusions</label>';
+        html += '<input type="number" name="pub_nombre_' + currentIndex + '" class="form-control" min="1" value="1" required>';
+        html += '</div>';
+        
+        html += '<div class="form-field-action">';
+        html += '<button type="button" class="btn btn-sm btn-danger" onclick="removePubliciteRow(this)">';
+        html += '<i class="fas fa-trash"></i></button></div>';
+        
+        html += '</div></div>';
+        
+        rowDiv.innerHTML = html;
+        container.appendChild(rowDiv);
+        publicitesRowCount++;
+    }
+
+    function removePubliciteRow(button) {
+        const row = button.closest('.publicite-row');
+        if (row) {
+            row.remove();
+        }
+    }
+
+    function updateTarifPublicite(selectElement) {
+        // Cette fonction sera utile si on veut afficher le tarif en temps réel
+        // Pour maintenant, on la laisse vide ou on peut ajouter de la logique future
     }
 </script>

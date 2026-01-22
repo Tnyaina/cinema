@@ -14,4 +14,6 @@ public interface DiffusionPublicitaireRepository extends JpaRepository<Diffusion
 
     @Query("SELECT d FROM DiffusionPublicitaire d WHERE d.videoPublicitaire.societe.id = :societeId ORDER BY d.dateDiffusion DESC")
     List<DiffusionPublicitaire> findBySocieteId(@Param("societeId") Long societeId);
+
+    void deleteBySeanceId(Long seanceId);
 }

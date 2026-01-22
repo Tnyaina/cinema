@@ -17,6 +17,14 @@ import cinema.referentiel.typeplace.TypePlaceRepository;
 import cinema.referentiel.categoriepersonne.CategoriePersonne;
 import cinema.referentiel.categoriepersonne.CategoriePersonneRepository;
 import cinema.film.Film;
+import cinema.publicite.video.VideoPublicitaire;
+import cinema.publicite.video.VideoPublicitaireRepository;
+import cinema.publicite.type.TypeDiffusionPub;
+import cinema.publicite.type.TypeDiffusionPubRepository;
+import cinema.publicite.diffusion.DiffusionPublicitaire;
+import cinema.publicite.diffusion.DiffusionPublicitaireRepository;
+import cinema.publicite.tarif.TarifPubliciteDefautRepository;
+import cinema.publicite.tarif.TarifPublicitePersonnaliseRepository;
 import java.time.LocalTime;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -36,6 +44,11 @@ public class SeanceController {
     private final TicketService ticketService;
     private final TypePlaceRepository typePlaceRepository;
     private final CategoriePersonneRepository categoriePersonneRepository;
+    private final VideoPublicitaireRepository videoPublicitaireRepository;
+    private final TypeDiffusionPubRepository typeDiffusionPubRepository;
+    private final DiffusionPublicitaireRepository diffusionPublicitaireRepository;
+    private final TarifPubliciteDefautRepository tarifPubliciteDefautRepository;
+    private final TarifPublicitePersonnaliseRepository tarifPublicitePersonnaliseRepository;
 
     @GetMapping
     public String listerSeances(
@@ -140,6 +153,38 @@ public class SeanceController {
         Double chiffresAffaires = ticketService.calculerChiffresAffairesSeance(id);
         Double revenuMaximum = seanceService.calculerRevenuMaximumSeance(id);
         
+        // Récupérer les publicités diffusées pour cette séance
+        List<DiffusionPublicitaire> diffusions = diffusionPublicitaireRepository.findBySeanceId(id);
+        
+        // Regrouper les diffusions par (société, vidéo)
+        Map<String, Map<String, Object>> diffusionsGroupees = new HashMap<>();
+        for (DiffusionPublicitaire diffusion : diffusions) {
+            String societeNom = diffusion.getVideoPublicitaire().getSociete().getLibelle();
+            String videoNom = diffusion.getVideoPublicitaire().getLibelle();
+            String cle = societeNom + "|||" + videoNom;
+            
+            if (!diffusionsGroupees.containsKey(cle)) {
+                Map<String, Object> group = new HashMap<>();
+                group.put("societe", societeNom);
+                group.put("video", videoNom);
+                group.put("nombre", 0);
+                group.put("tarifUnitaire", diffusion.getTarifApplique());
+                group.put("tarifTotal", 0.0);
+                diffusionsGroupees.put(cle, group);
+            }
+            
+            Map<String, Object> group = diffusionsGroupees.get(cle);
+            int nombre = (int) group.get("nombre") + 1;
+            double tarifTotal = (double) group.get("tarifTotal") + diffusion.getTarifApplique();
+            group.put("nombre", nombre);
+            group.put("tarifTotal", tarifTotal);
+        }
+        
+        Double pubCATotal = diffusionsGroupees.values().stream()
+            .mapToDouble(g -> (double) g.get("tarifTotal"))
+            .sum();
+        Double caTotal = chiffresAffaires + pubCATotal;
+        
         model.addAttribute("seance", seance);
         model.addAttribute("placesParRangee", placesParRangee);
         model.addAttribute("placesParType", placesParType);
@@ -153,6 +198,10 @@ public class SeanceController {
         model.addAttribute("totalPlaces", toutesLesPlaces.size());
         model.addAttribute("chiffresAffaires", chiffresAffaires);
         model.addAttribute("revenuMaximum", revenuMaximum);
+        model.addAttribute("diffusions", diffusions);
+        model.addAttribute("diffusionsGroupees", diffusionsGroupees.values());
+        model.addAttribute("pubCATotal", pubCATotal);
+        model.addAttribute("caTotal", caTotal);
         model.addAttribute("page", "seances/detail");
         model.addAttribute("pageTitle", "Réserver - " + seance.getFilm().getTitre());
         model.addAttribute("pageActive", "seances");
@@ -167,6 +216,8 @@ public class SeanceController {
         model.addAttribute("versionLangues", seanceService.obtenirToutesLesVersionsLangue());
         model.addAttribute("typePlaces", typePlaceRepository.findAll());
         model.addAttribute("categoriesPersonne", categoriePersonneRepository.findAll());
+        model.addAttribute("videos", videoPublicitaireRepository.findAll());
+        model.addAttribute("typesDiffusion", typeDiffusionPubRepository.findAll());
         model.addAttribute("seancesExistantes", seanceService.obtenirToutesLesSeances());
         model.addAttribute("page", "seances/formulaire");
         model.addAttribute("pageTitle", "Ajouter une séance");
@@ -213,6 +264,7 @@ public class SeanceController {
             
             Seance seanceCree = seanceService.creerSeance(seance);
             sauvegarderTarifs(seanceCree.getId(), params);
+            sauvegarderPublicites(seanceCree.getId(), params);
             
             redirectAttributes.addFlashAttribute("success", 
                 "✅ Séance créée avec succès");
@@ -235,6 +287,9 @@ public class SeanceController {
         model.addAttribute("typePlaces", typePlaceRepository.findAll());
         model.addAttribute("categoriesPersonne", categoriePersonneRepository.findAll());
         model.addAttribute("tarifs", tarifSeanceRepository.findBySeanceId(id));
+        model.addAttribute("videos", videoPublicitaireRepository.findAll());
+        model.addAttribute("typesDiffusion", typeDiffusionPubRepository.findAll());
+        model.addAttribute("diffusions", diffusionPublicitaireRepository.findBySeanceId(id));
         model.addAttribute("seancesExistantes", seanceService.obtenirToutesLesSeances());
         model.addAttribute("page", "seances/formulaire");
         model.addAttribute("pageTitle", "Modifier: " + seance.getFilm().getTitre());
@@ -280,6 +335,8 @@ public class SeanceController {
             seanceService.modifierSeance(id, seance);
             tarifSeanceRepository.deleteBySeanceId(id);
             sauvegarderTarifs(id, params);
+            diffusionPublicitaireRepository.deleteBySeanceId(id);
+            sauvegarderPublicites(id, params);
             
             redirectAttributes.addFlashAttribute("success", 
                 "✅ Séance modifiée avec succès");
@@ -388,5 +445,80 @@ public class SeanceController {
             
             index++;
         }
+    }
+
+    @Transactional
+    private void sauvegarderPublicites(Long seanceId, Map<String, String> params) {
+        Seance seance = seanceService.obtenirSeanceById(seanceId);
+        
+        int index = 0;
+        int emptyCount = 0;
+        int maxEmptyConsecutive = 3;
+        
+        while (index <= 100 && emptyCount < maxEmptyConsecutive) {
+            String videoIdStr = params.get("pub_video_" + index);
+            String typeIdStr = params.get("pub_type_" + index);
+            String nombreStr = params.get("pub_nombre_" + index);
+            
+            if (videoIdStr == null || videoIdStr.isEmpty() || 
+                typeIdStr == null || typeIdStr.isEmpty() || 
+                nombreStr == null || nombreStr.isEmpty()) {
+                emptyCount++;
+                index++;
+                continue;
+            }
+            
+            emptyCount = 0;
+            
+            try {
+                Long videoId = Long.parseLong(videoIdStr);
+                Long typeId = Long.parseLong(typeIdStr);
+                Integer nombre = Integer.parseInt(nombreStr);
+                
+                VideoPublicitaire video = videoPublicitaireRepository.findById(videoId)
+                    .orElseThrow(() -> new RuntimeException("Vidéo publicitaire non trouvée"));
+                TypeDiffusionPub type = typeDiffusionPubRepository.findById(typeId)
+                    .orElseThrow(() -> new RuntimeException("Type diffusion non trouvé"));
+                
+                // Créer 'nombre' diffusions
+                for (int i = 0; i < nombre; i++) {
+                    Double tarifApplique = calculerTarifPublicite(video, type);
+                    DiffusionPublicitaire diffusion = new DiffusionPublicitaire(
+                        video,
+                        seanceId,
+                        type,
+                        tarifApplique,
+                        seance.getDebut()
+                    );
+                    diffusionPublicitaireRepository.save(diffusion);
+                }
+                
+            } catch (NumberFormatException e) {
+                System.out.println("Erreur parsing publicité " + index + ": " + e.getMessage());
+            }
+            
+            index++;
+        }
+    }
+
+    private Double calculerTarifPublicite(VideoPublicitaire video, TypeDiffusionPub type) {
+        // Chercher un tarif personnalisé pour cette société et ce type
+        var tarifPersonnalise = tarifPublicitePersonnaliseRepository
+            .findLatestTarifBySocieteAndType(video.getSociete().getId(), type.getId(), java.time.LocalDate.now());
+        
+        if (tarifPersonnalise.isPresent()) {
+            return tarifPersonnalise.get().getPrixUnitaire();
+        }
+        
+        // Sinon, chercher un tarif défaut pour ce type
+        var tarifDefaut = tarifPubliciteDefautRepository
+            .findLatestTarifByTypeDiffusion(type.getId(), java.time.LocalDate.now());
+        
+        if (tarifDefaut.isPresent()) {
+            return tarifDefaut.get().getPrixUnitaire();
+        }
+        
+        // Sinon, retourner 0
+        return 0.0;
     }
 }
