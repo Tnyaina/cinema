@@ -231,6 +231,16 @@
                                                required>
                                     </div>
 
+                                    <div class="form-field">
+                                        <label>Montant (Ar) <span class="text-muted">(optionnel)</span></label>
+                                        <input type="number" 
+                                               name="pub_montant_${status.index}" 
+                                               class="form-control" 
+                                               step="0.01"
+                                               min="0"
+                                               placeholder="Tarif auto si vide">
+                                    </div>
+
                                     <div class="form-field-action">
                                         <button type="button" class="btn btn-sm btn-danger" onclick="removePubliciteRow(this)">
                                             <i class="fas fa-trash"></i>
@@ -800,6 +810,10 @@
         
         html += '<div class="form-field"><label>Nombre de diffusions</label>';
         html += '<input type="number" name="pub_nombre_' + currentIndex + '" class="form-control" min="1" value="1" required>';
+        html += '</div>';
+        
+        html += '<div class="form-field"><label>Montant (Ar) <span class="text-muted">(optionnel)</span></label>';
+        html += '<input type="number" name="pub_montant_' + currentIndex + '" class="form-control" step="0.01" min="0" placeholder="Tarif auto si vide">';
         html += '</div>';
         
         html += '<div class="form-field-action">';

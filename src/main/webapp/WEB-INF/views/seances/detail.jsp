@@ -621,40 +621,31 @@
             return;
         }
 
-        const form = document.getElementById('reservationForm');
-        
-        const nomInput = document.createElement('input');
-        nomInput.type = 'hidden';
-        nomInput.name = 'nomComplet';
-        nomInput.value = nomComplet;
-        form.appendChild(nomInput);
-
-        const emailInput = document.createElement('input');
-        emailInput.type = 'hidden';
-        emailInput.name = 'email';
-        emailInput.value = document.getElementById('email').value;
-        form.appendChild(emailInput);
-
-        const telephoneInput = document.createElement('input');
-        telephoneInput.type = 'hidden';
-        telephoneInput.name = 'telephone';
-        telephoneInput.value = document.getElementById('telephone').value;
-        form.appendChild(telephoneInput);
+        // Créer un formulaire dynamique pour soumettre les données
+        const formData = new FormData();
+        formData.append('nomComplet', nomComplet);
+        formData.append('email', document.getElementById('email').value);
+        formData.append('telephone', document.getElementById('telephone').value);
 
         selectedPlaces.forEach((place, index) => {
-            const placeInput = document.createElement('input');
-            placeInput.type = 'hidden';
-            placeInput.name = 'placeIds';
-            placeInput.value = place.placeId;
-            form.appendChild(placeInput);
-
-            const categorieInput = document.createElement('input');
-            categorieInput.type = 'hidden';
-            categorieInput.name = 'categorieIds';
-            categorieInput.value = place.categorieId;
-            form.appendChild(categorieInput);
+            formData.append('placeIds', place.placeId);
+            formData.append('categorieIds', place.categorieId);
         });
 
+        // Créer et soumettre un formulaire invisible
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '<c:url value="/seances/${seance.id}/reserver"/>';
+
+        for (const [key, value] of formData.entries()) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = value;
+            form.appendChild(input);
+        }
+
+        document.body.appendChild(form);
         form.submit();
     }
 

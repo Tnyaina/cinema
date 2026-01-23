@@ -21,6 +21,9 @@ public class PaiementPublicite extends BaseEntity {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate datePaiement;
 
+    @Column(columnDefinition = "NUMERIC(15,2) DEFAULT 0")
+    private Double montantPaye = 0.0;
+
     // Constructeurs
     public PaiementPublicite() {
     }
@@ -56,12 +59,21 @@ public class PaiementPublicite extends BaseEntity {
         this.datePaiement = datePaiement;
     }
 
+    public Double getMontantPaye() {
+        return montantPaye;
+    }
+
+    public void setMontantPaye(Double montantPaye) {
+        this.montantPaye = montantPaye;
+    }
+
     @Override
     public String toString() {
         return "PaiementPublicite{" +
                 "id=" + getId() +
                 ", societe=" + societe.getLibelle() +
                 ", montant=" + montant +
+                ", montantPaye=" + montantPaye +
                 ", datePaiement=" + datePaiement +
                 '}';
     }

@@ -76,3 +76,20 @@ CREATE TABLE paiement_publicite (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_paiement_societe FOREIGN KEY (societe_id) REFERENCES societe(id) ON DELETE CASCADE
 );
+
+
+---------------------------------- suite vendredi 23 janvier 2026 -----------------------------
+
+ALTER TABLE paiement_publicite
+ADD COLUMN montant_paye NUMERIC(15,2) DEFAULT 0;
+
+CREATE TABLE paiement_publicite_details (
+    id BIGSERIAL PRIMARY KEY,
+    paiement_publicite_id BIGINT NOT NULL,
+    diffusion_publicitaire_id BIGINT NOT NULL,
+    montant NUMERIC(15,2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_paiement_details_paiement FOREIGN KEY (paiement_publicite_id) REFERENCES paiement_publicite(id) ON DELETE CASCADE,
+    CONSTRAINT fk_paiement_details_diffusion FOREIGN KEY (diffusion_publicitaire_id) REFERENCES diffusion_publicitaire(id) ON DELETE CASCADE
+);

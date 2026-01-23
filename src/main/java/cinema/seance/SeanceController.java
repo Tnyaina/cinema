@@ -12,6 +12,8 @@ import cinema.tarif.TarifSeance;
 import cinema.tarif.TarifSeanceRepository;
 import cinema.tarif.TarifDefautRepository;
 import cinema.ticket.TicketService;
+import cinema.reservation.ReservationCreationService;
+import cinema.reservation.ReservationCreationService.PlaceSelection;
 import cinema.referentiel.typeplace.TypePlace;
 import cinema.referentiel.typeplace.TypePlaceRepository;
 import cinema.referentiel.categoriepersonne.CategoriePersonne;
@@ -25,8 +27,10 @@ import cinema.publicite.diffusion.DiffusionPublicitaire;
 import cinema.publicite.diffusion.DiffusionPublicitaireRepository;
 import cinema.publicite.tarif.TarifPubliciteDefautRepository;
 import cinema.publicite.tarif.TarifPublicitePersonnaliseRepository;
+import cinema.publicite.paiement.PaiementPubliciteRepository;
 import java.time.LocalTime;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -49,6 +53,8 @@ public class SeanceController {
     private final DiffusionPublicitaireRepository diffusionPublicitaireRepository;
     private final TarifPubliciteDefautRepository tarifPubliciteDefautRepository;
     private final TarifPublicitePersonnaliseRepository tarifPublicitePersonnaliseRepository;
+    private final PaiementPubliciteRepository paiementPubliciteRepository;
+    private final ReservationCreationService reservationCreationService;
 
     @GetMapping
     public String listerSeances(
@@ -206,6 +212,74 @@ public class SeanceController {
         model.addAttribute("pageTitle", "Réserver - " + seance.getFilm().getTitre());
         model.addAttribute("pageActive", "seances");
         return "layout";
+    }
+
+    @PostMapping("/{id}/reserver")
+    public String creerReservation(
+            @PathVariable Long id,
+            @RequestParam String nomComplet,
+            @RequestParam String email,
+            @RequestParam String telephone,
+            @RequestParam(name = "placeIds") List<Long> placeIds,
+            @RequestParam(name = "categorieIds") List<Long> categorieIds,
+            RedirectAttributes redirectAttributes) {
+        
+        try {
+            // Récupérer la séance
+            Seance seance = seanceService.obtenirSeanceById(id);
+            if (seance == null) {
+                redirectAttributes.addFlashAttribute("error", "❌ Séance non trouvée");
+                return "redirect:/seances";
+            }
+
+            // Créer les sélections de places
+            List<PlaceSelection> placesSelection = new ArrayList<>();
+            if (placeIds != null && categorieIds != null && !placeIds.isEmpty()) {
+                for (int i = 0; i < placeIds.size(); i++) {
+                    Long placeId = placeIds.get(i);
+                    Long categorieId = (i < categorieIds.size()) ? categorieIds.get(i) : categorieIds.get(0);
+                    
+                    Place place = placeService.obtenirPlaceById(placeId);
+                    CategoriePersonne categorie = categoriePersonneRepository.findById(categorieId).orElse(null);
+                    
+                    if (place != null && categorie != null) {
+                        placesSelection.add(new PlaceSelection(placeId, categorieId));
+                    }
+                }
+            }
+
+            if (placesSelection.isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", "❌ Veuillez sélectionner au moins une place");
+                return "redirect:/seances/" + id;
+            }
+
+            // Créer la réservation via le service
+            var result = reservationCreationService.creerReservationAvecTickets(
+                    seance,
+                    nomComplet,
+                    email,
+                    telephone,
+                    placesSelection
+            );
+
+            redirectAttributes.addFlashAttribute("success", 
+                String.format("✅ Réservation créée avec succès ! %d place(s) réservée(s) pour un total de %.2f Ar",
+                    result.getNombreTickets(), 
+                    result.getMontantTotal()
+                )
+            );
+            return "redirect:/seances/" + id;
+            
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", "⚠️ " + e.getMessage());
+            return "redirect:/seances/" + id;
+        } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("error", "❌ " + e.getMessage());
+            return "redirect:/seances/" + id;
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "❌ Erreur lors de la création : " + e.getMessage());
+            return "redirect:/seances/" + id;
+        }
     }
 
     @GetMapping("/nouveau")
@@ -459,6 +533,7 @@ public class SeanceController {
             String videoIdStr = params.get("pub_video_" + index);
             String typeIdStr = params.get("pub_type_" + index);
             String nombreStr = params.get("pub_nombre_" + index);
+            String montantStr = params.get("pub_montant_" + index);
             
             if (videoIdStr == null || videoIdStr.isEmpty() || 
                 typeIdStr == null || typeIdStr.isEmpty() || 
@@ -480,9 +555,36 @@ public class SeanceController {
                 TypeDiffusionPub type = typeDiffusionPubRepository.findById(typeId)
                     .orElseThrow(() -> new RuntimeException("Type diffusion non trouvé"));
                 
+                // Vérifier si la période est clôturée (a un paiement)
+                YearMonth periode = YearMonth.from(seance.getDebut().toLocalDate());
+                boolean periodeClotureé = paiementPubliciteRepository.findBySocieteId(video.getSociete().getId())
+                    .stream()
+                    .anyMatch(p -> YearMonth.from(p.getDatePaiement()).equals(periode));
+                
+                if (periodeClotureé) {
+                    System.out.println("⚠️ Impossible d'ajouter une diffusion : la période " + periode + 
+                                     " est clôturée pour " + video.getSociete().getLibelle());
+                    continue; // Ignorer cette diffusion
+                }
+                
+                // Déterminer le tarif appliqué
+                Double tarifApplique;
+                if (montantStr != null && !montantStr.isEmpty()) {
+                    try {
+                        tarifApplique = Double.parseDouble(montantStr);
+                        // Si montant est 0 ou négatif, utiliser le calcul automatique
+                        if (tarifApplique <= 0) {
+                            tarifApplique = calculerTarifPublicite(video, type);
+                        }
+                    } catch (NumberFormatException e) {
+                        tarifApplique = calculerTarifPublicite(video, type);
+                    }
+                } else {
+                    tarifApplique = calculerTarifPublicite(video, type);
+                }
+                
                 // Créer 'nombre' diffusions
                 for (int i = 0; i < nombre; i++) {
-                    Double tarifApplique = calculerTarifPublicite(video, type);
                     DiffusionPublicitaire diffusion = new DiffusionPublicitaire(
                         video,
                         seanceId,

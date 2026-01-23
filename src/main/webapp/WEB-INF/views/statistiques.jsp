@@ -8,6 +8,11 @@
             <h1>Statistiques de Trésorerie</h1>
             <p class="subtitle">Vue d'ensemble des performances financières</p>
         </div>
+        <div class="header-actions">
+            <a href="<c:url value='/chiffres-affaires-diffusions'/>" class="btn btn-outline-primary">
+                <i class="fas fa-chart-bar me-2"></i> Détail des diffusions
+            </a>
+        </div>
     </div>
 
     <!-- Filtres -->
@@ -178,26 +183,25 @@
                 </div>
                 <form method="post" action="<c:url value='/paiements-publicite'/>">
                     <div class="modal-body">
-                        <input type="hidden" id="societeId" name="societeId">
-                        
                         <div class="mb-3">
                             <label class="form-label">Société</label>
                             <input type="text" class="form-control" id="societeName" disabled>
+                            <input type="hidden" id="societeId" name="societeId">
                         </div>
                         
                         <div class="mb-3">
-                            <label class="form-label">Montant à payer (Ar)</label>
-                            <input type="number" id="montantReste" class="form-control" disabled>
+                            <label class="form-label">Montant total dû (Ar)</label>
+                            <input type="number" id="montantTotal" class="form-control" disabled step="0.01">
                         </div>
                         
                         <div class="mb-3">
-                            <label class="form-label" for="montantPaiement">Montant du paiement (Ar) <span class="required">*</span></label>
+                            <label class="form-label" for="montantPaiement">Montant à payer (Ar) <span class="required">*</span></label>
                             <input type="number" id="montantPaiement" name="montant" class="form-control" step="0.01" min="0" required>
                         </div>
                         
                         <div class="mb-3">
                             <label class="form-label" for="datePaiement">Date du paiement <span class="required">*</span></label>
-                            <input type="date" id="datePaiement" name="datePaiement" class="form-control" value="${today}" required>
+                            <input type="date" id="datePaiement" name="datePaiement" class="form-control" required>
                         </div>
                     </div>
                     <div class="modal-footer border-0 bg-light">
@@ -489,12 +493,26 @@ function updateFilters(value) {
 }
 
 function openPaiementModal(societeId, societeName, montantReste) {
-    document.getElementById('societeId').value = societeId;
-    document.getElementById('societeName').value = societeName;
-    document.getElementById('montantReste').value = montantReste.toFixed(2);
-    document.getElementById('montantPaiement').value = montantReste.toFixed(2);
-    document.getElementById('montantPaiement').max = montantReste.toFixed(2);
+    // Vérifier que les éléments du modal existent
+    const societeIdInput = document.getElementById('societeId');
+    const societyNameInput = document.getElementById('societeName');
+    const montantTotalInput = document.getElementById('montantTotal');
+    const montantPaiementInput = document.getElementById('montantPaiement');
+    const datePaiementInput = document.getElementById('datePaiement');
     
+    if (!societeIdInput || !societyNameInput || !montantTotalInput || !montantPaiementInput || !datePaiementInput) {
+        console.error('❌ Éléments du modal manquants!');
+        return;
+    }
+    
+    // Remplir les champs
+    societeIdInput.value = societeId;
+    societyNameInput.value = societeName;
+    montantTotalInput.value = montantReste.toFixed(2);
+    montantPaiementInput.value = '';
+    datePaiementInput.valueAsDate = new Date();
+    
+    // Ouvrir le modal
     const modal = new bootstrap.Modal(document.getElementById('paiementModal'));
     modal.show();
 }
