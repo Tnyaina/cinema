@@ -89,6 +89,19 @@
                     </a>
                 </div>
 
+                <!-- PRODUITS -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Produits</div>
+                    <a href="<c:url value='/produits/vente'/>" class="nav-item ${pageActive == 'vente-produits' ? 'active' : ''}">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Vente de produits</span>
+                    </a>
+                    <a href="<c:url value='/produits'/>" class="nav-item ${pageActive == 'produits' ? 'active' : ''}">
+                        <i class="fas fa-box"></i>
+                        <span>Gestion produits</span>
+                    </a>
+                </div>
+
                 <!-- CLIENTS -->
                 <div class="nav-section">
                     <div class="nav-section-title">Clients</div>

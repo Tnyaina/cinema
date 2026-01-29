@@ -16,7 +16,9 @@ import cinema.publicite.societe.SocieteRepository;
 import cinema.seance.SeanceRepository;
 import cinema.seance.Seance;
 import cinema.ticket.TicketRepository;
+import cinema.produit.VenteProduitRepository;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -32,6 +34,7 @@ public class StatistiqueController {
     private final SocieteRepository societeRepository;
     private final SeanceRepository seanceRepository;
     private final TicketRepository ticketRepository;
+    private final VenteProduitRepository venteProduitRepository;
 
     @GetMapping("/statistiques")
     public String statistiques(
@@ -73,6 +76,19 @@ public class StatistiqueController {
             })
             .mapToDouble(DiffusionPublicitaire::getTarifApplique)
             .sum();
+
+        // Calculer le CA Produits pour la période
+        LocalDateTime debutPeriode, finPeriode;
+        if ("annee".equals(periode)) {
+            debutPeriode = LocalDateTime.of(annee, 1, 1, 0, 0, 0);
+            finPeriode = LocalDateTime.of(annee, 12, 31, 23, 59, 59);
+        } else {
+            YearMonth yearMonth = YearMonth.of(annee, Integer.parseInt(mois));
+            debutPeriode = yearMonth.atDay(1).atStartOfDay();
+            finPeriode = yearMonth.atEndOfMonth().atTime(23, 59, 59);
+        }
+        Double caProduitsPeriode = venteProduitRepository.getTotalVentesBetween(debutPeriode, finPeriode);
+        if (caProduitsPeriode == null) caProduitsPeriode = 0.0;
 
         // Regrouper par société pour les paiements
         List<Societe> societes = societeRepository.findAll();
@@ -128,6 +144,7 @@ public class StatistiqueController {
         model.addAttribute("annee", annee);
         model.addAttribute("anneeActuelle", LocalDate.now().getYear());
         model.addAttribute("pubCAPeriode", pubCAPeriode);
+        model.addAttribute("caProduitsPeriode", caProduitsPeriode);
         model.addAttribute("societesPaiements", societesPaiements);
         model.addAttribute("today", LocalDate.now());
 
@@ -229,6 +246,22 @@ public class StatistiqueController {
 
         Double caTotalGlobal = caTotalTickets + caTotalPublicites;
 
+        // Calculer le CA Produits pour la période
+        LocalDateTime debutPeriode, finPeriode;
+        if ("annee".equals(periode)) {
+            debutPeriode = LocalDateTime.of(annee, 1, 1, 0, 0, 0);
+            finPeriode = LocalDateTime.of(annee, 12, 31, 23, 59, 59);
+        } else {
+            YearMonth yearMonth = YearMonth.of(annee, Integer.parseInt(mois));
+            debutPeriode = yearMonth.atDay(1).atStartOfDay();
+            finPeriode = yearMonth.atEndOfMonth().atTime(23, 59, 59);
+        }
+        Double caTotalProduits = venteProduitRepository.getTotalVentesBetween(debutPeriode, finPeriode);
+        if (caTotalProduits == null) caTotalProduits = 0.0;
+
+        // CA Total incluant les produits
+        Double caTotalGlobalAvecProduits = caTotalGlobal + caTotalProduits;
+
         model.addAttribute("page", "chiffre-affaires-diffusions");
         model.addAttribute("pageTitle", "Chiffres d'affaires par diffusion");
         model.addAttribute("pageActive", "chiffres-affaires");
@@ -238,6 +271,8 @@ public class StatistiqueController {
         model.addAttribute("caTotalPublicitesPaye", caTotalPublicitesPaye);
         model.addAttribute("caTotalResteAPayer", caTotalResteAPayer);
         model.addAttribute("caTotalGlobal", caTotalGlobal);
+        model.addAttribute("caTotalProduits", caTotalProduits);
+        model.addAttribute("caTotalGlobalAvecProduits", caTotalGlobalAvecProduits);
         model.addAttribute("totalNbDiffusions", totalNbDiffusions);
         model.addAttribute("periode", periode);
         model.addAttribute("mois", mois);

@@ -105,14 +105,14 @@
         <!-- Prix moyen -->
         <div class="stat-card card">
             <div class="stat-icon" style="background-color: #ec4899;">
-                <i class="fas fa-megaphone"></i>
+                <i class="fas fa-shopping-cart"></i>
             </div>
             <div class="stat-content">
-                <div class="stat-label">CA Publicités</div>
+                <div class="stat-label">CA Produits</div>
                 <div class="stat-value">
-                    <fmt:formatNumber value="${pubCAPeriode}" type="number" maxFractionDigits="2" />Ar
+                    <fmt:formatNumber value="${caProduitsPeriode}" type="number" maxFractionDigits="2" />Ar
                 </div>
-                <div class="stat-subtext">Revenu publicitaire</div>
+                <div class="stat-subtext">Revenus produits</div>
             </div>
         </div>
     </div>

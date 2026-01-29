@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import cinema.ticket.TicketRepository;
 import cinema.seance.SeanceRepository;
+import cinema.produit.VenteProduitRepository;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
@@ -16,6 +17,7 @@ public class StatistiqueService {
 
     private final TicketRepository ticketRepository;
     private final SeanceRepository seanceRepository;
+    private final VenteProduitRepository venteProduitRepository;
 
     /**
      * Récupère les statistiques pour un mois spécifique
@@ -47,6 +49,10 @@ public class StatistiqueService {
         // CA Total (somme des prix des tickets payés/confirmés)
         Double caTotal = ticketRepository.calculerCATotalParPeriode(debut, fin);
         stats.setCATotal(caTotal != null ? caTotal : 0.0);
+
+        // CA Total Produits
+        Double caTotalProduits = venteProduitRepository.getTotalVentesBetween(debut, fin);
+        stats.setCATotalProduits(caTotalProduits != null ? caTotalProduits : 0.0);
 
         // Nombre de séances
         Long nbSeances = seanceRepository.countSeancesParPeriode(debut, fin);

@@ -62,7 +62,7 @@
 
     <!-- Résumé des totaux -->
     <div class="row mb-4">
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="card border-0 shadow-sm bg-light">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -81,7 +81,7 @@
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-2">
             <div class="card border-0 shadow-sm bg-light">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
@@ -100,18 +100,37 @@
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-2">
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="text-muted mb-1">CA Produits</p>
+                            <h4 class="text-warning fw-bold mb-0">
+                                <fmt:formatNumber value="${caTotalProduits}" type="currency" currencySymbol=""/>
+                                <span class="text-muted fs-6">Ar</span>
+                            </h4>
+                        </div>
+                        <div class="text-warning fs-1 opacity-25">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
             <div class="card border-0 shadow-sm bg-light">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
                             <p class="text-muted mb-1">CA Pub. Payé</p>
-                            <h4 class="text-warning fw-bold mb-0">
+                            <h4 class="text-secondary fw-bold mb-0">
                                 <fmt:formatNumber value="${caTotalPublicitesPaye}" type="currency" currencySymbol=""/>
                                 <span class="text-muted fs-6">Ar</span>
                             </h4>
                         </div>
-                        <div class="text-warning fs-1 opacity-25">
+                        <div class="text-secondary fs-1 opacity-25">
                             <i class="fas fa-money-bill-wave"></i>
                         </div>
                     </div>
@@ -119,14 +138,33 @@
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-2">
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="text-muted mb-1">CA Pub. Restant</p>
+                            <h4 class="text-danger fw-bold mb-0">
+                                <fmt:formatNumber value="${caTotalResteAPayer}" type="currency" currencySymbol=""/>
+                                <span class="text-muted fs-6">Ar</span>
+                            </h4>
+                        </div>
+                        <div class="text-danger fs-1 opacity-25">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2">
             <div class="card border-0 shadow-sm bg-light">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
                             <p class="text-muted mb-1">CA Total</p>
                             <h4 class="text-primary fw-bold mb-0">
-                                <fmt:formatNumber value="${caTotalGlobal}" type="currency" currencySymbol=""/>
+                                <fmt:formatNumber value="${caTotalGlobalAvecProduits}" type="currency" currencySymbol=""/>
                                 <span class="text-muted fs-6">Ar</span>
                             </h4>
                         </div>
@@ -161,7 +199,7 @@
                                 <th colspan="4" class="bg-light border-end">
                                     <i class="fas fa-info-circle text-primary me-2"></i> Informations
                                 </th>
-                                <th colspan="4" class="bg-light border-end">
+                                <th colspan="5" class="bg-light border-end">
                                     <i class="fas fa-money-bill-wave text-success me-2"></i> Chiffres d'affaires
                                 </th>
                                 <th class="bg-light">
@@ -182,7 +220,10 @@
                                     <i class="fas fa-megaphone text-info"></i> Publicités
                                 </th>
                                 <th class="text-end" style="border-right: 2px solid #dee2e6;">
-                                    <i class="fas fa-check-circle text-warning"></i> Payé
+                                    <i class="fas fa-shopping-cart text-warning"></i> Produits
+                                </th>
+                                <th class="text-end" style="border-right: 2px solid #dee2e6;">
+                                    <i class="fas fa-check-circle text-secondary"></i> Payé
                                 </th>
                                 <th class="text-end" style="border-right: 2px solid #dee2e6;">
                                     <i class="fas fa-exclamation-circle text-danger"></i> Reste
@@ -224,6 +265,12 @@
                                     </td>
                                     <td class="text-end" style="border-right: 2px solid #dee2e6;">
                                         <div class="text-warning fw-bold">
+                                            <fmt:formatNumber value="0" type="currency" currencySymbol=""/>
+                                        </div>
+                                        <small class="text-muted">Ar</small>
+                                    </td>
+                                    <td class="text-end" style="border-right: 2px solid #dee2e6;">
+                                        <div class="text-secondary fw-bold">
                                             <fmt:formatNumber value="${diffusion.caPublicitesPaye}" type="currency" currencySymbol=""/>
                                         </div>
                                         <small class="text-muted">Ar</small>
@@ -260,6 +307,12 @@
                                 </td>
                                 <td class="text-end" style="border-right: 2px solid #dee2e6;">
                                     <div class="text-warning">
+                                        <fmt:formatNumber value="${caTotalProduits}" type="currency" currencySymbol=""/>
+                                    </div>
+                                    <small class="text-muted">Ar</small>
+                                </td>
+                                <td class="text-end" style="border-right: 2px solid #dee2e6;">
+                                    <div class="text-secondary">
                                         <fmt:formatNumber value="${caTotalPublicitesPaye}" type="currency" currencySymbol=""/>
                                     </div>
                                     <small class="text-muted">Ar</small>
@@ -272,7 +325,7 @@
                                 </td>
                                 <td class="text-end">
                                     <div class="text-primary fs-5">
-                                        <fmt:formatNumber value="${caTotalGlobal}" type="currency" currencySymbol=""/>
+                                        <fmt:formatNumber value="${caTotalGlobalAvecProduits}" type="currency" currencySymbol=""/>
                                     </div>
                                     <small class="text-muted">Ar</small>
                                 </td>

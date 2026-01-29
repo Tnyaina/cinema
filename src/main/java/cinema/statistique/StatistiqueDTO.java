@@ -15,4 +15,5 @@ public class StatistiqueDTO {
     private Long nombreTicketsAnnules;
     private Double prixMoyenTicket;
     private Double tauxOccupationMoyen;
+    private Double CATotalProduits;
 }
