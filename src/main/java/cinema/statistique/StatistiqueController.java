@@ -135,6 +135,12 @@ public class StatistiqueController {
             }
         }
 
+        // Calculer le total payé
+        Double totalPaye = societesPaiements.stream()
+            .mapToDouble(s -> (Double) s.get("montantPaye"))
+            .sum();
+
+        model.addAttribute("totalPaye", totalPaye);
         model.addAttribute("page", "statistiques");
         model.addAttribute("pageTitle", "Statistiques de Trésorerie");
         model.addAttribute("pageActive", "statistiques");

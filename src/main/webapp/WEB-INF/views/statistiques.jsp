@@ -115,6 +115,20 @@
                 <div class="stat-subtext">Revenus produits</div>
             </div>
         </div>
+
+        <!-- Total Payé -->
+        <div class="stat-card card">
+            <div class="stat-icon" style="background-color: #8b5cf6;">
+                <i class="fas fa-money-check-alt"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-label">Total Payé</div>
+                <div class="stat-value">
+                    <fmt:formatNumber value="${totalPaye}" type="number" maxFractionDigits="2" />Ar
+                </div>
+                <div class="stat-subtext">Paiements publicitaires</div>
+            </div>
+        </div>
     </div>
 
     <!-- Section Paiements par Société -->
